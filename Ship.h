@@ -1,7 +1,3 @@
-//
-// Created by Tal Koren on 21/03/2022.
-//
-
 #pragma once
 #include <vector>
 #include "Point.h"
@@ -9,24 +5,26 @@
 
 
 class Ship {
-    std::vector<Point> currLoc, oldLoc;
+    std::vector<Point> currentLocation, oldLocation;
     ShipSize size;
-    char shipCh; // represented character
+    char shipCharacter; // represented character
 
-    void copyCurrToOld();
+    void copyCurrentLocationToOldLocation();
 
 public:
     Ship(const Point& p, ShipSize size, char shipCh);
     std::vector<Point> getCurrLoc() const {
-        return currLoc;
+        return currentLocation;
     }
     std::vector<Point> getOldLoc() const {
-        return oldLoc;
+        return oldLocation;
     }
-    char getShipCh() const {
-        return shipCh;
+    char getShipCharacter() const {
+        return shipCharacter;
     }
-    void moveShip(Direction dir);
+    void move(Direction dir);
+
+    friend std::ostream& operator << (std::ostream& out, const Ship& ship);
 };
 
 

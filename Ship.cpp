@@ -1,43 +1,48 @@
-//
-// Created by Tal Koren on 21/03/2022.
-//
-
 #include "Ship.h"
 
 
-Ship::Ship(const Point& p, ShipSize size, char shipCh) : size(size), shipCh(shipCh) {
+Ship::Ship(const Point& p, ShipSize size, char shipCh) : size(size), shipCharacter(shipCh) {
     int x = p.getX();
     int y = p.getY();
 
     if (size == ShipSize::Big) {
-        currLoc.insert(currLoc.begin(), { {x, y++},{x++, y--}, {x, y++}, {x, y} });
+        currentLocation.insert(currentLocation.begin(), { {x, y++}, {x++, y--}, {x, y++}, {x, y} });
     }
     else {
-        currLoc.insert(currLoc.begin(), { {x,y++}, {x, y} });
+        currentLocation.insert(currentLocation.begin(), { {x, y++}, {x, y} });
     }
 }
 
-void Ship::moveShip(Direction dir) {
-    copyCurrToOld();
+void Ship::move(Direction dir) {
+    int x, y;
+    copyCurrentLocationToOldLocation();
     switch (dir) {
     case Direction::Down:
-        for (auto& i : currLoc) {
-            i.movePoint(Direction::Down);
+        for (auto& point : currentLocation) {
+            x = point.getX();
+            y = point.getY();
+            point.set(++x, y);
         }
         break;
     case Direction::Up:
-        for (auto& i : currLoc) {
-            i.movePoint(Direction::Up);
+        for (auto& point : currentLocation) {
+            x = point.getX();
+            y = point.getY();
+            point.set(--x, y);
         }
         break;
     case Direction::Left:
-        for (auto& i : currLoc) {
-            i.movePoint(Direction::Left);
+        for (auto& point : currentLocation) {
+            x = point.getX();
+            y = point.getY();
+            point.set(x, --y);
         }
         break;
     case Direction::Right:
-        for (auto& i : currLoc) {
-            i.movePoint(Direction::Right);
+        for (auto& point : currentLocation) {
+            x = point.getX();
+            y = point.getY();
+            point.set(x, ++y);
         }
         break;
     case Direction::Stop:
@@ -45,9 +50,25 @@ void Ship::moveShip(Direction dir) {
     }
 }
 
-void Ship::copyCurrToOld() {
-    if (!oldLoc.empty()) {
-        oldLoc.clear();
+void Ship::copyCurrentLocationToOldLocation() {
+    if (!oldLocation.empty()) {
+        oldLocation.clear();
     }
-    oldLoc.insert(oldLoc.begin(), currLoc.begin(), currLoc.end());
+    oldLocation.insert(oldLocation.begin(), currentLocation.begin(), currentLocation.end());
+}
+
+std::ostream& operator<<(std::ostream& out, const Ship& ship) {
+    std::cout << "Represented character: " << ship.shipCharacter << std::endl
+        << "Location : " << std::endl;
+    for (auto& point : ship.currentLocation) {
+        std::cout << point << " ";
+    }
+    std::cout << std::endl;
+    if (ship.size == ShipSize::Big) {
+        std::cout << "Size : Big";
+    }
+    else {
+        std::cout << "Size : Small";
+    }
+    return out;
 }

@@ -1,6 +1,3 @@
-//
-// Created by Tal Koren on 21/03/2022.
-//
 
 #include "Game.h"
 
@@ -38,11 +35,10 @@ void Game::initGame() {
 }
 
 void Game::setShip() {
-    char shipCh;
-    for (int i = 0; i < 2; i++) {
-        shipCh = ships[i].getShipCh();
-        for (auto& i : ships[i].getCurrLoc()) {
-            bord[i.getX()][i.getY()] = shipCh;
+    for (auto& ship : ships) {
+        char ch = ship.getShipCharacter();
+        for (auto& point : ship.getCurrLoc()) {
+            bord[point.getX()][point.getY()] = ch;
         }
     }
 }
@@ -55,23 +51,23 @@ void Game::run() {
     {
         if (_kbhit()) {
             key = tolower(_getch());
-            if (isKeyValid(key)){
+            if (isKeyValid(key)) {
                 if (isASwitcherKey(key)) {
-                    key == (int) SwitchKeys::SwitchToBig ? acticveShip = 1 : acticveShip = 0;
+                    key == (int)SwitchKeys::SwitchToBig ? activeShip = 1 : activeShip = 0;
                     dir = Direction::Stop;
                 }
                 else {
                     dir = (Direction)key;
                     if (isNextClear(dir)) {
-                        ships[acticveShip].moveShip(dir);
+                        ships[activeShip].move(dir);
                         renderShip();
                     }
                 }
             }
             else
             {
-                if(isNextClear(dir)) {
-                    ships[acticveShip].moveShip(dir);
+                if (isNextClear(dir)) {
+                    ships[activeShip].move(dir);
                     renderShip();
                 }
             }
@@ -79,13 +75,13 @@ void Game::run() {
         else
         {
             if (isNextClear(dir)) {
-                ships[acticveShip].moveShip(dir);
+                ships[activeShip].move(dir);
                 renderShip();
             }
         }
         Sleep(500);
 
-    } while ((int) key != 27);
+    } while ((int)key != 27);
     clrscr();
 }
 
@@ -100,27 +96,21 @@ bool Game::isKeyValid(int key) {
 
 bool Game::isNextClear(Direction dir) {
     std::vector<Point> curr;
-    curr = ships[acticveShip].getCurrLoc();
+    curr = ships[activeShip].getCurrLoc();
+    bool flag = true;
 
-    if (dir != Direction::Stop) {
-        bool flag = true;
-
-        for (auto& i : curr) {
-            i.movePoint(dir);
-        }
-
-        for (auto& i : curr) {
-            if (bord[i.getX()][i.getY()] != ' ' 
-                && bord[i.getX()][i.getY()] != ships[acticveShip].getShipCh()) {
-                flag = false;
-                break;
-            }
-        }
-        return flag;
+    for (auto& i : curr) {
+        setPointByDirection(dir, i);
     }
-    return false;
-}
 
+    for (auto& i : curr) {
+        if (bord[i.getX()][i.getY()] != ' '  && bord[i.getX()][i.getY()] != ships[activeShip].getShipCharacter()) {
+            flag = false;
+            break;
+        }
+    }
+    return flag;
+}
 
 void Game::printWithNums() { //Test func
     for (int i = 0; i < Hight; ++i) {
@@ -145,20 +135,40 @@ void Game::printWithNums() { //Test func
 
 }
 
-void Game::renderShip() {
-    for (auto& i : ships[acticveShip].getOldLoc()) {
-        gotoxy(i.getY(), i.getX());
-        std::cout << ' ';
-    }
-    char ch = ships[acticveShip].getShipCh();
-    for (auto& i : ships[acticveShip].getCurrLoc()){
-        gotoxy(i.getY(), i.getX());
-        std::cout << ch;
+void Game::setPointByDirection(Direction dir, Point& p) {
+    switch (dir) {
+    case Direction::Up:
+        p.set(p.getX() - 1, p.getY());
+        break;
+    case Direction::Down:
+        p.set(p.getX() + 1, p.getY());
+        break;
+    case Direction::Left:
+        p.set(p.getX(), p.getY() - 1);
+        break;
+    case Direction::Right:
+        p.set(p.getX(), p.getY() + 1);
+        break;
+    case Direction::Stop:
+        break;
     }
 }
 
 bool Game::isASwitcherKey(int key) {
     return  key == (int)SwitchKeys::SwitchToBig
-            || key == (int)SwitchKeys::SwitchToSmall;
+        || key == (int)SwitchKeys::SwitchToSmall;
 }
+
+void Game::renderShip() {
+    for (auto& i : ships[activeShip].getOldLoc()) {
+        gotoxy(i.getY(), i.getX());
+        std::cout << ' ';
+    }
+    char ch = ships[activeShip].getShipCharacter();
+    for (auto& i : ships[activeShip].getCurrLoc()) {
+        gotoxy(i.getY(), i.getX());
+        std::cout << ch;
+    }
+}
+
 
