@@ -16,7 +16,6 @@ void Round::init() {
 	setBlocks();
 	renderer.printBord(bord, hight, width);
 	renderer.printLegend(lives, time, activeShip);
-	renderer.gotoxy(0, 27);//To do :remove later
 }
 
 bool Round::isWallAhead(const std::vector<Point> &position) const{
