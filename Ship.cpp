@@ -1,7 +1,7 @@
 #include "Ship.h"
 
 
-Ship::Ship(const Point& p, ShipSize size, char shipCh) : size(size), shipCharacter(shipCh) {
+Ship::Ship(const Point& p, ShipSize size, char shipCh , int weight) : size(size), shipCharacter(shipCh), weightCanMove(weight) {
     int x = p.getX();
     int y = p.getY();
 
@@ -16,6 +16,7 @@ Ship::Ship(const Point& p, ShipSize size, char shipCh) : size(size), shipCharact
 void Ship::move(Direction dir) {
     int x, y;
     copyCurrentLocationToOldLocation();
+
     switch (dir) {
     case Direction::Down:
         for (auto& point : currentLocation) {
