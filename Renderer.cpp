@@ -42,14 +42,11 @@ void Renderer::addPointsToErase(const std::vector<Point>& points) {
 	pointsToErase.insert(pointsToErase.end(), points.begin(), points.end());
 }
 
-void Renderer::printBord(const char bord[][width], int hight, int width) const
+void Renderer::printBord(char** bord) const
 {
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
-			if (bord[i][j] == (char)objectAsciiVal::Wall1 || bord[i][j] == (char) objectAsciiVal::Wall2) {
-				printCell((char)objectChars::Wall);
-			}
-			else if (bord[i][j] == (char)objectAsciiVal::Block) {
+			if (bord[i][j] >= '1' && bord[i][j] <= '9') {
 				printCell((char)objectChars::Block);
 			}
 			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint) {
@@ -156,7 +153,6 @@ void Renderer::printCell(char cellChar) const {
 			std::cout << (char)objectChars::Wall;
 			break;
 		case (char) objectAsciiVal::Block:
-			system("color 02");
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), yellow);
 			break;
 		case (char) objectAsciiVal::BigShip:

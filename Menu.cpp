@@ -12,6 +12,7 @@ void Menu::printMenu() const{
 	std::cout << std::endl;
 	std::cout << "Please enter your choice" << std::endl;
 	std::cout << "1 - Start new game" << std::endl;
+	std::cout << "2 - Choose screen" << std::endl;
 	std::cout << "7 - Enable/Disable colors" << std::endl;
 	std::cout << "8 - Present instructions and keys" << std::endl;
 	std::cout << "9 - Exit game" << std::endl;
@@ -93,11 +94,17 @@ void Menu::getUserChoice() {
 	printMenu();
 	while (choice != validChoic::Exit) {
 		if (_kbhit()) {
-			choice = _getch();
+			choice = tolower(_getch());
 			if (choice == validChoic::Play) {
 				clrscr();
 				Game newGame(this->color);
 				newGame.startGame();
+				clrscr();
+				printMenu();
+			}
+			else if (choice == validChoic::ChangeScreen) {
+				clrscr();
+				chooseScreen();
 				clrscr();
 				printMenu();
 			}
@@ -117,4 +124,48 @@ void Menu::getUserChoice() {
 	}
 	clrscr();
 	std::cout << "Thanks for playing !" << std::endl << "GOODBYE:)";
+}
+
+void Menu::chooseScreen() 
+{
+	char choice = 0;
+	int screenNum = 0;
+	int selectedScreen = 0;
+	bool isSelected = true;
+
+	this->screenReader.readScreen(this->bord, screenNum);
+	cout << this->bord;
+	this->renderer.printBord(this->bord.getBord());
+	cout << "Screen is selected" << endl;
+	cout << "Press N for next screen or B to return to menu";
+
+	while (choice != 'b') {
+		if (_kbhit()) {
+			choice = tolower(_getch());
+			if (choice == 'n') {
+				isSelected = false;
+				clrscr();
+				screenNum = (screenNum + 1) % 3;
+				this->screenReader.readScreen(this->bord, screenNum);
+				cout << this->bord;
+				this->renderer.printBord(this->bord.getBord());
+
+				if (screenNum == selectedScreen) {
+					isSelected = true;
+					cout << "Screen is selected" << endl;
+					cout << "Press N for next screen or B to return to menu";
+				}
+				else {
+					cout << "Press Y to select screen, Press N for next screen or B to return to menu " << endl;
+				}
+			}
+			else if (choice == 'y' && !isSelected) {
+				isSelected = true;
+				selectedScreen = screenNum;
+				cout << "Screen is selected" << endl;
+				cout << "Press N for next screen or B to return to menu";
+			}
+		}
+	}
+	this->screenReader.readScreen(this->bord, selectedScreen);
 }

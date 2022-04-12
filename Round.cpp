@@ -14,7 +14,7 @@ void Round::init() {
 	hideCursor();
 	setShips();
 	setBlocks();
-	renderer.printBord(bord, hight, width);
+	/*renderer.printBord(bord, hight, width);*/
 	renderer.printLegend(lives, time, activeShip);
 }
 

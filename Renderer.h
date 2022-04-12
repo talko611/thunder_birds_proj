@@ -48,7 +48,7 @@ public:
 	Renderer(bool _color): color(_color){}
 	void gotoxy(int x, int y) const;
 	void addPointsToErase(const std::vector<Point>& points);
-	void printBord(const char bord[][80], int hight, int width) const;
+	void printBord(char** bord) const;
 	void printLegend(int lives, int time, int activeShip) const;
 	void renderNextMove(const Ship& ship, const Block blocks[], int size , int time, int activeShip, bool isFinish);
 	void printPauseMessage() const;
