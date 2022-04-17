@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "Utils.h"
 #include "Ship.h"
 #include "Block.h"
 #include "Utils.h"
@@ -8,9 +9,12 @@
 
 class Renderer
 {
+	
 	std::vector<Point> pointsToErase;
-	enum class objectChars{Wall = 176, Block = 178};
 	bool color;
+	Point legendPosition;
+	enum class objectChars { Wall = 176, Block = 178 };
+	enum lenFromStartLegend{Lives = 11, Time = 33, ActiveShip= 65 };
 	enum concol
 	{
 		black = 0,
@@ -49,11 +53,15 @@ public:
 	void gotoxy(int x, int y) const;
 	void addPointsToErase(const std::vector<Point>& points);
 	void printBord(char** bord) const;
+	void Renderer::printBord(char bord[][width]) const;
 	void printLegend(int lives, int time, int activeShip) const;
 	void renderNextMove(const Ship& ship, const Block blocks[], int size , int time, int activeShip, bool isFinish);
 	void printPauseMessage() const;
 	void printWinningMessage()const;
 	void printLosingMessage(int lives) const;
 	void clearRow() const;
+	void setLegendPosition(int x, int y);
+	void changeColorMode();
+	bool isColor() const;
 };
 

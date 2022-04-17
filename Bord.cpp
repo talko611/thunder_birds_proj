@@ -8,6 +8,13 @@ Bord::Bord()
 
 	this->lives = this->time = 0;
 }
+
+Bord::Bord(const Bord& bord) {
+	this->bord = bord.bord;
+	this->lives = bord.lives;
+	this->time = bord.time;
+}
+
 Bord::~Bord()
 {
 	for (int i = 0; i < hight; i++)
@@ -34,14 +41,6 @@ int Bord::getTime() const
 string Bord::getName() const
 {
 	return this->name;
-}
-
-int Bord::getbordHight() const {
-	return this->hight;
-}
-
-int Bord::getbordWidth() const {
-	return this->width;
 }
 
 void Bord::setName(string name)

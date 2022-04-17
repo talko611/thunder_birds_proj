@@ -3,48 +3,36 @@
 #include "Utils.h"
 #include "Block.h"
 #include "Renderer.h"
+#include "Bord.h"
+#include "Goast.h"
 #include <conio.h>
+#include <vector>
+
+using namespace std;
 
 enum class ValidKeys { Up = 119, Down = 120, Right = 100, Left = 97, SwitchToSmall = 115, SwitchToBig = 98, ESC = 27, EXIT = 57 };
 enum class SwitchKeys { SwitchToSmall = 115, SwitchToBig = 98 };
 
 class Round
 {
-	Ship ships[2] = { {{4,1} ,ShipSize::Small, '@' , 2}, {{1,1}, ShipSize::Big, '#' , 6} };
-	constexpr static int numOfBlocks = 3;
-	Block blocks[numOfBlocks];
+	char bord[hight][width];
+	Ship ships[2] = { Ship(ShipSize::Small, '@', 2) , Ship(ShipSize::Big, '#', 6) };
+	vector<Block> blocks;
+	vector<Goast> goats;
 	int activeShip = 0;
-	int time = 300;
+	int time;
 	int lives;
+	Renderer& renderer;
 	bool shipFinished[2] = { false, false };
 	bool isLost = false;
-	Renderer renderer;
-	char bord[hight][width] = { 
-								"|----------------------------------------------------------------------------|\0",
-								"|    |            |||||||||||||||||||||||||||||||||||||||                    |\0",
-								"|    |            |||||||||||||||||||||||||||||||||||||||                    |\0",
-								"|    |            |||||||||||||||||||||||||||||||||||||||                    |\0",
-								"|    |                                                                       |\0",
-								"|    |                                                                       |\0",
-								"|    |            |||||||||||||||||||||||||||||||||||||||                    |\0",
-								"|    |                              |                                        |\0",
-								"|    |                              |                                        |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",	
-								"|    |                              |                   |                    |\0",
-								"|    |                                                  |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|    |                              |                   |                    |\0",
-								"|                                   |                   |                    |\0",
-								"|                                   |                   |                    |\0",
-								"----------------------------------------------------------------------!!!!----\0",};
 	
-	void setShips(); //set ships on bord in initialization
+	void readObjectsFromBord();
+	void readBlock(vector<Point>& points, Point& temp, char objectCh);
+	bool isPointBelongToExsistingBlock(const Point& p);
+	bool isPointAlreadyAdded(vector<Point>& points, const Point& p);
+
+	void printObjectDetails();//Test func
+
 	bool isWallAhead(const std::vector<Point>& position) const;
 	bool isOtherShipAhead(const std::vector<Point>& position) const; //checks if the non active ship is in the way.
 	bool isShipAhead(const std::vector<Point>& position, int* index) const; //check if a ship is on the way and rerutrn which ship in index;
@@ -70,8 +58,7 @@ class Round
 	bool isShipDead();
 	void Round::moveBlock(Block& block, Direction dir);
 public:
-	Round(int _lives, bool color) : lives(_lives), renderer(Renderer(color)) { 
-		initBlocks(); }
+	Round(Bord& bord, Renderer& renderer);
 	void init();
 	int run();
 	

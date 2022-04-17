@@ -20,7 +20,6 @@ void Menu::printMenu() const{
 
 void Menu::printInstructions() const
 {
-	
 	for (int i = 0; i < seperateLineLen; i++) {
 		std::cout << '-';
 	}
@@ -60,7 +59,7 @@ void Menu::printInstructions() const
 
 void Menu::changeColorStatus() {
 	char choice = 0;
-	if (this->color) {
+	if (renderer.isColor()) {
 		std::cout << "Colors are enable" << std::endl;
 	}
 	else
@@ -74,9 +73,9 @@ void Menu::changeColorStatus() {
 		if (_kbhit()) {
 			choice = tolower(_getch());
 			if (choice == 'y') {
-				this->color = !this->color;
+				renderer.changeColorMode();
 				clrscr();
-				if (this->color) {
+				if (renderer.isColor()) {
 					std::cout << "Colors are enable" << std::endl;
 				}
 				else
@@ -90,15 +89,17 @@ void Menu::changeColorStatus() {
 }
 
 void Menu::getUserChoice() {
+	hideCursor();
 	int choice = 0;
 	printMenu();
+	this->screenReader.readScreen(this->bord, 0);
 	while (choice != validChoic::Exit) {
 		if (_kbhit()) {
 			choice = tolower(_getch());
 			if (choice == validChoic::Play) {
 				clrscr();
-				Game newGame(this->color);
-				newGame.startGame();
+				Game newGame;
+				newGame.startGame(this->bord, this->renderer);
 				clrscr();
 				printMenu();
 			}

@@ -1,21 +1,103 @@
 #include "Round.h"
 
+Round::Round(Bord& bord, Renderer& renderer) : renderer(renderer){
+	char** pBord = bord.getBord();
+	for (int i = 0; i < hight; i++) {
+		for (int j = 0; j < width; j++) {
+			this->bord[i][j] = pBord[i][j];
+		}
+	}
+	this->lives = bord.getLives();
+	this->time = bord.getTime();
+}
 
-void Round::setShips() {
-	for (auto& ship : ships) {
-		char ch = ship.getShipCharacter();
-		for (auto& point : ship.getCurrLoc()) {
-			bord[point.getX()][point.getY()] = ch;
+void Round::readObjectsFromBord()
+{
+	bool isSmallShipReaded = false;
+	bool isBigShipReaded = false;
+	
+	for (int i = 0; i < hight; i++) {
+		for (int j = 0; j < width; j++) {
+			if (!isSmallShipReaded && this->bord[i][j] == (char)objectAsciiVal::SmallShip) {
+				ships[0].setLocation(vector<Point> { {i, j}, { i,j + 1 }});
+				isSmallShipReaded = true;
+			}
+				
+			else if (!isBigShipReaded && this->bord[i][j] == (char)objectAsciiVal::BigShip) {
+				ships[1].setLocation(vector <Point> { {i, j}, { i, j + 1 }, { i + 1, j }, { i + 1, j + 1 }});
+				isBigShipReaded = true;
+			}
+
+			else if (bord[i][j] >= '1' && bord[i][j] <= '9') {
+				vector<Point> temp;
+				Point curr(i, j);
+				readBlock(temp, curr, bord[i][j]);
+				if (!temp.empty()) {
+					blocks.push_back(Block(temp));
+					temp.clear();
+				}
+			}
+			else if (bord[i][j] == '$') {
+				this->goats.push_back(Goast(i, j));
+			}
+
+			else if (bord[i][j] == '&') {
+				renderer.setLegendPosition(i, j);
+			}
 		}
 	}
 }
 
+void Round::readBlock(vector<Point>& points, Point& temp, char objectCh) {
+	int x = temp.getX();
+	int y = temp.getY();
+
+	if (this->bord[x][y] == objectCh && !isPointAlreadyAdded(points, temp) && !isPointBelongToExsistingBlock(temp)) {
+		points.push_back(Point(x, y));
+		temp.set(x - 1, y);
+		readBlock(points, temp, objectCh);
+		temp.set(x -1, y + 1);
+		readBlock(points, temp, objectCh);
+		temp.set(x - 1, y - 1);
+		readBlock(points, temp, objectCh);
+		temp.set(x, y - 1);
+		readBlock(points, temp, objectCh);
+		temp.set(x, y + 1);
+		readBlock(points, temp, objectCh);
+		temp.set(x + 1, y - 1);
+		readBlock(points, temp, objectCh);
+		temp.set(x + 1, y);
+		readBlock(points, temp, objectCh);
+		temp.set(x + 1, y + 1);
+		readBlock(points, temp, objectCh);
+	}
+}
+
+bool Round::isPointBelongToExsistingBlock(const Point& p) {
+	for (auto& block : this->blocks) {
+		for (auto& point : block.getCurrentLocation()) {
+			if (point == p) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool Round::isPointAlreadyAdded(vector<Point>& points, const Point& p) {
+	for (auto& point : points) {
+		if (point == p) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Round::init() {
-	hideCursor();
-	setShips();
-	setBlocks();
-	/*renderer.printBord(bord, hight, width);*/
+	readObjectsFromBord();
+	renderer.printBord(this->bord);
 	renderer.printLegend(lives, time, activeShip);
+	printObjectDetails();
 }
 
 bool Round::isWallAhead(const std::vector<Point> &position) const{
@@ -104,7 +186,7 @@ int Round::run() {
 				}
 				playNextMove(dir);
 			}
-			this->renderer.renderNextMove(ships[activeShip], blocks, numOfBlocks, --time, activeShip, isWin());
+			/*this->renderer.renderNextMove(ships[activeShip], blocks, numOfBlocks, --time, activeShip, isWin());*/
 			if (time == 0) {
 				isLost = true;
 			}
@@ -239,34 +321,34 @@ void Round::initBlocks() {
 }
 
 void Round::setBlocks() {
-	for (auto& block : blocks) {
+	/*for (auto& block : blocks) {
 		for (auto& point : block.getCurrentLocation()) {
 			bord[point.getX()][point.getY()] = (char) objectAsciiVal::Block;
 		}
-	}
+	}*/
 }
 
 bool Round::isBlockAhead(const std::vector<Point>& position, Point& saver) const {
 	bool result = false;
-	for (auto& point : position) {
+	/*for (auto& point : position) {
 		if (bord[point.getX()][point.getY()] == (char)objectAsciiVal::Block) {
 			saver = point;
 			result = true;
 			break;
 		}
-	}
+	}*/
 	return result;
 }
 
 Block& Round::findBlock(const Point& pointOfBlock)
 {
-	for (int i = 0; i < this->numOfBlocks; i++) {
+	/*for (int i = 0; i < this->numOfBlocks; i++) {
 		for (auto& point : blocks[i].getCurrentLocation()) {
 			if (point == pointOfBlock) {
 				return blocks[i];
 			}
 		}
-	}
+	}*/
 	return Block();
 }
 
@@ -314,16 +396,16 @@ void Round::moveBlocks(Block& block, Direction dir)
 }
 
 void Round::moveBlock(Block& block, Direction dir) {
-	std::vector<Point> location = block.getCurrentLocation();
-	this->renderer.addPointsToErase(location);
-	for (auto& point : location) {
-		this->bord[point.getX()][point.getY()] = ' ';
-	}
-	setPointsOfNextMove(dir, location);//Move block location to the next location according to direction
-	block.setCurrentLocation(location);
-	for (auto& point : location) {
-		this->bord[point.getX()][point.getY()] = (char)objectAsciiVal::Block;
-	}
+	//std::vector<Point> location = block.getCurrentLocation();
+	//this->renderer.addPointsToErase(location);
+	//for (auto& point : location) {
+	//	this->bord[point.getX()][point.getY()] = ' ';
+	//}
+	//setPointsOfNextMove(dir, location);//Move block location to the next location according to direction
+	//block.setCurrentLocation(location);
+	//for (auto& point : location) {
+	//	this->bord[point.getX()][point.getY()] = (char)objectAsciiVal::Block;
+	//}
 }
 
 void Round:: moveFallingBlocks() {
@@ -467,5 +549,22 @@ bool Round::isShipDead()
 		}
 	}
 	return result;
+}
+
+void Round::printObjectDetails() {
+	gotoxy(0, 27);
+	cout << "Ships" << endl;
+	for (auto& ship : this->ships) {
+		cout << ship;
+	}
+	cout << "Blocks" << endl;
+	for (auto& block : this->blocks) {
+		cout << block;
+	}
+	cout << endl;
+	for (auto& goast : goats) {
+		cout << goast;
+	}
+	cout << endl;
 }
 

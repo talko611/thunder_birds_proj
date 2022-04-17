@@ -26,6 +26,11 @@ public:
         return x == p.x && y == p.y;
     }
 
+    void operator = (const Point& p) {
+        this->x = p.x;
+        this->y = p.y;
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Point& p) {
         return out << '(' << p.x << ',' << p.y << ')';
     }

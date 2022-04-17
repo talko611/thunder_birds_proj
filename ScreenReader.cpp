@@ -38,14 +38,12 @@ void  ScreenReader::readScreen(Bord& bord, int screenNum) const
 	in >> time;
 	bord.setTime(time);
 
-	int bordHight = bord.getbordHight();
-	int bordWidth= bord.getbordWidth();
 	char** bordP = bord.getBord();
 	string line;
 	in.get();
-	for (int i = 0; i < bordHight; i++) {
+	for (int i = 0; i < hight; i++) {
 		getline(in, line);
-		line.copy(bordP[i], bordWidth);//Check if there is a better way
+		line.copy(bordP[i], width);//Check if there is a better way
 	}
 
 	in.close();

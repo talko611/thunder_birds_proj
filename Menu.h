@@ -8,7 +8,6 @@ class Menu
 {
 	constexpr static int seperateLineLen = 40;
 	int userChoice;
-	bool color = true;
 	Bord bord;
 	Renderer renderer;
 	ScreenReader screenReader;
@@ -19,7 +18,7 @@ class Menu
 	void changeColorStatus();
 	void chooseScreen();
 public:
-	Menu() : renderer(Renderer(color)) {};
+	Menu() : renderer(Renderer(true)) {};
 	void getUserChoice();
 	
 };

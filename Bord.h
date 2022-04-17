@@ -4,7 +4,6 @@
 
 class Bord
 {
-	constexpr static int hight = 25, width = 80;
 	char** bord;
 	string name;
 	int lives;
@@ -12,13 +11,12 @@ class Bord
 	
 public:
 	Bord();
+	Bord(const Bord& bord);
 	~Bord();
 	char** getBord();
 	int getLives() const;
 	int getTime() const;
 	string getName() const;
-	int getbordHight() const;
-	int getbordWidth() const;
 	void setName(string name);
 	void setLives(int lives);
 	void setTime(int time);

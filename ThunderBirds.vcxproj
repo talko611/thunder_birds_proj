@@ -19,8 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Block.cpp" />
     <ClCompile Include="Bord.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Goast.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Round.cpp" />
@@ -33,6 +35,7 @@
     <ClInclude Include="Block.h" />
     <ClInclude Include="Bord.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Goast.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Round.h" />

@@ -5,7 +5,7 @@
 
 
 class Ship {
-    std::vector<Point> currentLocation, oldLocation;
+    vector<Point> currentLocation, oldLocation;
     ShipSize size;
     char shipCharacter; // represented character
     int weightCanMove;
@@ -14,21 +14,17 @@ class Ship {
 
 public:
     Ship() {};
+    Ship(ShipSize size, char shipCh, int weight);
     Ship(const Point& p, ShipSize size, char shipCh , int weight);
-
-    std::vector<Point> getCurrLoc() const {
-        return currentLocation;
-    }
-    std::vector<Point> getOldLoc() const {
-        return oldLocation;
-    }
-    char getShipCharacter() const {
-        return shipCharacter;
-    }
+    std::vector<Point> getCurrLoc() const;
+    std::vector<Point> getOldLoc() const;
+    char getShipCharacter() const;
     void move(Direction dir);
-
-    int getWeightCanMove()const { return weightCanMove; };
-
+    int getWeightCanMove()const;
+    void setLocation(vector<Point>& location);
+    void setSize(ShipSize size);
+    void setWeightCanMove(int weight);
+    void setShipCharacter(char ch);
     friend std::ostream& operator << (std::ostream& out, const Ship& ship);
 };
 
