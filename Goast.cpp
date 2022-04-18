@@ -11,9 +11,10 @@ Goast::Goast(const Goast& goast) {
 	this->direction = goast.direction;
 }
 
-void Goast::move(Direction dir) {
+void Goast::move(Direction dir, char bord[][width]) {
 	int x = this->position.getX();
 	int y = this->position.getY();
+	bord[x][y] = ' ';
 	switch (dir)
 	{
 	case Direction::Up:
@@ -33,11 +34,25 @@ void Goast::move(Direction dir) {
 	default:
 		break;
 	}
+	bord[x][y] = (char)objectAsciiVal::Goast;
 }
+
+Direction Goast::getDirection() const { return this->direction; }
 
 Point Goast::getLocation() const {return this->position;}
 
+void Goast::changeDirection() {
+	if (this->direction == Direction::Up) {
+		this->direction = Direction::Down;
+	}
+	else {
+		this->direction = Direction::Up;
+	}
+}
+
 void Goast::setLocation(int x, int y) { this->position.set(x, y); }
+
+bool Goast::isEmpty()const { return this->position.getX() < 0; }
 
 void Goast::operator=(const Goast& goast) { 
 	this->position = goast.position;

@@ -12,11 +12,27 @@ vector<Point> Block::getOldLocation() const { return oldLocation; };
 
 void Block::setLocation(const vector<Point>& location) { this->currentLocation = location;}
 
-ostream& operator <<(std::ostream& out, const Block& block) {
+char Block::getCharacter() const { return this->character; }
+
+void Block::setCharacter(char ch) { this->character = ch; }
+
+bool Block::isEmpty() const { return this->currentLocation.empty(); }
+
+bool Block::operator==(const Block& block) const {
+	return this->currentLocation == block.currentLocation;
+}
+
+void Block::operator=(const Block& block)  {
+	this->currentLocation = block.currentLocation;
+	this->character = block.character;
+	this->weight = block.weight;
+}
+
+ostream& operator <<(ostream& out, const Block& block) {
 	out << "Block location: ";
 	for (auto& point : block.currentLocation) {
-		std::cout << point << " ";
+		cout << point << " ";
 	}
-	out << std::endl << "Weight: " << block.weight << std::endl;
-	return out;
+	return out << endl << "Weight: " << block.weight << std::endl << "Character: " << block.character << endl;;
+	
 }

@@ -10,7 +10,9 @@
 class Renderer
 {
 	
-	std::vector<Point> pointsToErase;
+	vector<Point> pointsToErase;
+	vector<Point> blockToPrint;
+	vector<Point> goastsToPrint;
 	bool color;
 	Point legendPosition;
 	enum class objectChars { Wall = 176, Block = 178 };
@@ -51,7 +53,10 @@ class Renderer
 public:
 	Renderer(bool _color): color(_color){}
 	void gotoxy(int x, int y) const;
-	void addPointsToErase(const std::vector<Point>& points);
+	void addPointsToErase(const vector<Point>& points);
+	void addPointToErase(const Point& point);
+	void addPointsOfBlock(const vector<Point>& points);
+	void addPointsOfGoast(const Point& point);
 	void printBord(char** bord) const;
 	void Renderer::printBord(char bord[][width]) const;
 	void printLegend(int lives, int time, int activeShip) const;
@@ -63,5 +68,6 @@ public:
 	void setLegendPosition(int x, int y);
 	void changeColorMode();
 	bool isColor() const;
+	
 };
 

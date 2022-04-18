@@ -22,7 +22,7 @@ public:
         y = y1;
     }
 
-    bool operator ==(const Point& p) {
+    bool operator ==(const Point& p) const {
         return x == p.x && y == p.y;
     }
 

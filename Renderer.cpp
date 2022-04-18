@@ -42,6 +42,10 @@ void Renderer::addPointsToErase(const std::vector<Point>& points) {
 	pointsToErase.insert(pointsToErase.end(), points.begin(), points.end());
 }
 
+void Renderer::addPointsOfBlock(const vector<Point>& points) {
+	this->blockToPrint.insert(this->blockToPrint.end(), points.begin(), points.end());
+}
+
 void Renderer::printBord(char** bord) const
 {
 	for (int i = 0; i < hight; i++) {
@@ -65,7 +69,7 @@ void Renderer::printBord(char bord[][width]) const
 {
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
-			if (bord[i][j] >= '1' && bord[i][j] <= '9') {
+			if (bord[i][j] >= (char) objectAsciiVal::BlockLowestVal && bord[i][j] <= (char) objectAsciiVal::BlockHighestVal) {
 				printCell((char)objectChars::Block);
 			}
 			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint || bord[i][j] == (char) objectAsciiVal::LegendPoint) {
@@ -209,3 +213,11 @@ void Renderer::setLegendPosition(int x, int y) { this->legendPosition.set(x, y);
 void Renderer::changeColorMode() { this->color = !this->color; }
 
 bool Renderer::isColor() const { return this->color; }
+
+void Renderer::addPointToErase(const Point& point) {
+	this->pointsToErase.push_back(point);
+}
+
+void Renderer::addPointsOfGoast(const Point& point) {
+	this->goastsToPrint.push_back(point);
+}

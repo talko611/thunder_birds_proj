@@ -3,9 +3,6 @@
 
 void Game::startGame(Bord& bord, Renderer& renderer){
     int lives = bord.getLives();
-    Round round(bord, renderer);
-    round.init();
-    _getch();
     while (lives) {
         Round round(bord, renderer);
         round.init();
