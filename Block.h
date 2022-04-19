@@ -6,26 +6,19 @@
 
 class Block
 {
-	std::vector<Point> currentLocation ,oldLocation;
-	int weight;
+	vector<Point> currentLocation;
+	int weight = 0;
+	char character = -1;
 public:
 	Block() {};
-	Block(const std::vector<Point> &blockLocation) : currentLocation(blockLocation) {
-		this->weight = blockLocation.size();
-	}
-
-	int getWeight() const { return weight; }
-	std::vector<Point> getCurrentLocation() const{ return currentLocation; }
-	std::vector<Point> getOldLocation() const{ return oldLocation; }
-	void setCurrentLocation(const std::vector<Point>& points) {currentLocation = points;}
-
-	friend std::ostream& operator <<(std::ostream& out, const Block& block) {
-		std::cout << "Block location: ";
-		for (auto& point : block.currentLocation) {
-			std::cout << point << " ";
-		}
-		std::cout << std::endl <<"Weight: " << block.weight << std::endl;
-		return out;
-	}
+	Block(const vector<Point>& blockLocation);
+	int getWeight() const;
+	const vector<Point>& getCurrentLocation() const;
+	char getCharacter() const;
+	void setLocation(const vector<Point>& location);
+	void setCharacter(char ch);
+	bool operator==(const Block& block) const;
+	void operator= (const Block& block) ;
+	friend ostream& operator <<(ostream& out, const Block& block);
 };
 

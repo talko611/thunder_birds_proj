@@ -22,8 +22,13 @@ public:
         y = y1;
     }
 
-    bool operator ==(const Point& p) {
+    bool operator ==(const Point& p) const {
         return x == p.x && y == p.y;
+    }
+
+    void operator = (const Point& p) {
+        this->x = p.x;
+        this->y = p.y;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Point& p) {

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "Utils.h"
 #include "Ship.h"
 #include "Block.h"
 #include "Utils.h"
@@ -8,9 +9,14 @@
 
 class Renderer
 {
-	std::vector<Point> pointsToErase;
-	enum class objectChars{Wall = 176, Block = 178};
+	
+	vector<Point> pointsToErase;
+	vector<Point> goastsToPrint;
+	vector<Point> shipToPrint;
 	bool color;
+	Point legendPosition;
+	enum class objectChars { Wall = 176, Block = 178 };
+	enum lenFromStartLegend{Lives = 11, Time = 33, ActiveShip= 65 };
 	enum concol
 	{
 		black = 0,
@@ -40,20 +46,30 @@ class Renderer
 	void printShipTurn(int activeShip) const;
 	void printCell(char cellChar) const;
 	void erase()const;
-	void renderShip(const Ship& ship) const;
-	void renderBlocks(const Block blocks[], int size) const;
+	void renderBlocks(const vector<Block>& blocks) const;
+	void renderGoasts() const;
+	void renderShip(int activeShip) const;
 	
 
 public:
 	Renderer(bool _color): color(_color){}
 	void gotoxy(int x, int y) const;
-	void addPointsToErase(const std::vector<Point>& points);
-	void printBord(const char bord[][80], int hight, int width) const;
+	void addPointsToErase(const vector<Point>& points);
+	void addPointToErase(const Point& point);
+	void addPointsOfGoast(const Point& point);
+	void addPointsOfShip(const vector<Point>& points);
+	void printBord(char** bord) const;
+	void printBord(char bord[][width]) const;
 	void printLegend(int lives, int time, int activeShip) const;
-	void renderNextMove(const Ship& ship, const Block blocks[], int size , int time, int activeShip, bool isFinish);
+	void renderNextMove(int time, int activeShip, const vector<Block>& blocks);
 	void printPauseMessage() const;
 	void printWinningMessage()const;
 	void printLosingMessage(int lives) const;
 	void clearRow() const;
+	void setLegendPosition(int x, int y);
+	void changeColorMode();
+	bool isColor() const;
+	
+	
 };
 

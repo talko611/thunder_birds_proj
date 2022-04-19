@@ -19,40 +19,43 @@ void Renderer::erase()const
 	}
 }
 
-void Renderer::renderShip(const Ship& ship) const{
-	char shipCharacter = ship.getShipCharacter();
-	std::vector <Point> shipLocation = ship.getCurrLoc();
-	for (auto& point : shipLocation) {
-		gotoxy(point.getY(), point.getX());
-		printCell(shipCharacter);
-	}
- }
-
-void Renderer::renderBlocks(const Block blocks[], int size) const{
-	for (int i = 0; i < size; i++) {
-		std::vector <Point> blockLocation = blocks[i].getCurrentLocation();
-		for (auto& point : blockLocation) {
-			gotoxy(point.getY(), point.getX());
-			printCell((char)objectChars::Block);
-		}
-	}
-}
-
 void Renderer::addPointsToErase(const std::vector<Point>& points) {
 	pointsToErase.insert(pointsToErase.end(), points.begin(), points.end());
 }
 
-void Renderer::printBord(const char bord[][width], int hight, int width) const
+void Renderer::printBord(char** bord) const
 {
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
-			if (bord[i][j] == (char)objectAsciiVal::Wall1 || bord[i][j] == (char) objectAsciiVal::Wall2) {
+			if (bord[i][j] == (char)objectAsciiVal::Wall1 || bord[i][j] == (char)objectAsciiVal::Wall2) {
 				printCell((char)objectChars::Wall);
 			}
-			else if (bord[i][j] == (char)objectAsciiVal::Block) {
+			else if (bord[i][j] >= '1' && bord[i][j] <= '9') {
 				printCell((char)objectChars::Block);
 			}
-			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint) {
+			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint || bord[i][j] == (char)objectAsciiVal::LegendPoint) {
+				printCell(' ');
+			}
+			else
+			{
+				printCell(bord[i][j]);
+			}
+		}
+		std::cout << std::endl;
+	}
+}
+
+void Renderer::printBord(char bord[][width]) const
+{
+	for (int i = 0; i < hight; i++) {
+		for (int j = 0; j < width; j++) {
+			if (bord[i][j] == (char)objectAsciiVal::Wall1 || bord[i][j] == (char)objectAsciiVal::Wall2) {
+				printCell((char)objectChars::Wall);
+			}
+			else if (bord[i][j] >= (char) objectAsciiVal::BlockLowestVal && bord[i][j] <= (char) objectAsciiVal::BlockHighestVal) {
+				printCell((char)objectChars::Block);
+			}
+			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint || bord[i][j] == (char) objectAsciiVal::LegendPoint) {
 				printCell(' ');
 			}
 			else
@@ -66,10 +69,8 @@ void Renderer::printBord(const char bord[][width], int hight, int width) const
 
 void Renderer::printLegend(int lives, int time, int activeShip) const
 {
-	std::string const legend = "|     Lives:                 Time:                    Active Ship:           |\n"
-	
-							"------------------------------------------------------------------------------\0";
-	gotoxy(0, 23);
+	std::string const legend = "     Lives:                 Time:                    Active Ship:           \0";
+	gotoxy(this->legendPosition.getY(), this->legendPosition.getX());
 	std::cout << legend;
 	printLives(lives);
 	printTime(time);
@@ -78,19 +79,25 @@ void Renderer::printLegend(int lives, int time, int activeShip) const
 }
 
 void Renderer::printTime(int time) const {
-	gotoxy(34, 23);
+	int x = this->legendPosition.getX();
+	int y = this->legendPosition.getY() + lenFromStartLegend::Time;
+	gotoxy(y, x);
 	std::cout << "   ";
-	gotoxy(34, 23);
+	gotoxy(y, x);
 	std::cout << time << std::endl;
 }
 
 void Renderer::printLives(int lives) const{
-	gotoxy(12, 23);
+	int x = this->legendPosition.getX();
+	int y = this->legendPosition.getY() + lenFromStartLegend::Lives;
+	gotoxy(y, x);
 	std::cout << lives << std::endl;
 }
 
 void Renderer::printShipTurn(int activeShip) const {
-	gotoxy(67, 23);
+	int x = this->legendPosition.getX();
+	int y = this->legendPosition.getY() + lenFromStartLegend::ActiveShip;
+	gotoxy(y, x);
 	if (activeShip == 0) {
 		std::cout << "Small" << std::endl;
 	}
@@ -100,15 +107,17 @@ void Renderer::printShipTurn(int activeShip) const {
 	}
 }
 
-void Renderer::renderNextMove(const Ship& ship, const Block blocks[], int size ,int time, int activeShip , bool isFinish) 
+void Renderer::renderNextMove(int time, int activeShip, const vector<Block>& blocks) 
 {
 	erase();
-	renderBlocks(blocks, size);
-	if(!isFinish)
-		renderShip(ship);
+	renderBlocks(blocks);
+	renderGoasts();
+	renderShip(activeShip);
 	printTime(time);
 	printShipTurn(activeShip);
-	pointsToErase.clear();
+	this->pointsToErase.clear();
+	this->goastsToPrint.clear();
+	this->shipToPrint.clear();
 }
 
 void Renderer::clearRow()const {
@@ -147,25 +156,25 @@ void Renderer::printCell(char cellChar) const {
 	if (this->color) {
 		switch (cellChar)
 		{
-		case (char) objectAsciiVal::Wall1:
+		case (char) objectChars::Wall:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), gray);
-			std::cout << (char)objectChars::Wall;
+			cout << (char)objectChars::Wall;
 			break;
-		case (char)objectAsciiVal::Wall2:
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), gray);
-			std::cout << (char)objectChars::Wall;
-			break;
-		case (char) objectAsciiVal::Block:
-			system("color 02");
+		case (char) objectChars::Block:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), yellow);
+			cout << cellChar;
 			break;
 		case (char) objectAsciiVal::BigShip:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), red);
-			std::cout << cellChar;
+			cout << cellChar;
 			break;
 		case (char)objectAsciiVal::SmallShip:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), dark_blue);
-			std::cout << cellChar;
+			cout << cellChar;
+			break;
+		case(char) objectAsciiVal::Goast:
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), magenta);
+			cout << cellChar;
 			break;
 		default:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), white);
@@ -177,5 +186,51 @@ void Renderer::printCell(char cellChar) const {
 	else
 	{
 		std::cout << cellChar;
+	}
+}
+
+void Renderer::setLegendPosition(int x, int y) { this->legendPosition.set(x, y);}
+
+void Renderer::changeColorMode() { this->color = !this->color; }
+
+bool Renderer::isColor() const { return this->color; }
+
+void Renderer::addPointToErase(const Point& point) {
+	this->pointsToErase.push_back(point);
+}
+
+void Renderer::addPointsOfGoast(const Point& point) {
+	this->goastsToPrint.push_back(point);
+}
+
+void Renderer::renderGoasts() const {
+	for (const auto& point : this->goastsToPrint) {
+		gotoxy(point.getY(), point.getX());
+		printCell((char)objectAsciiVal::Goast);
+	}
+}
+
+void Renderer::addPointsOfShip(const vector<Point>& points) {
+	this->shipToPrint = points;
+}
+
+void Renderer::renderShip(int activeShip) const {
+	for (const auto& point : this->shipToPrint) {
+		gotoxy(point.getY(), point.getX());
+		if (activeShip) {
+			printCell((char)objectAsciiVal::BigShip);
+		}
+		else {
+			printCell((char)objectAsciiVal::SmallShip);
+		}
+	}
+}
+
+void Renderer::renderBlocks(const vector<Block>& blocks) const {
+	for (const auto& block : blocks) {
+		for (const auto& point : block.getCurrentLocation()) {
+			gotoxy(point.getY(), point.getX());
+			printCell((char)objectChars::Block);
+		}
 	}
 }

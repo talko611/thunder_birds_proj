@@ -12,6 +12,7 @@ void Menu::printMenu() const{
 	std::cout << std::endl;
 	std::cout << "Please enter your choice" << std::endl;
 	std::cout << "1 - Start new game" << std::endl;
+	std::cout << "2 - Choose screen" << std::endl;
 	std::cout << "7 - Enable/Disable colors" << std::endl;
 	std::cout << "8 - Present instructions and keys" << std::endl;
 	std::cout << "9 - Exit game" << std::endl;
@@ -19,7 +20,6 @@ void Menu::printMenu() const{
 
 void Menu::printInstructions() const
 {
-	
 	for (int i = 0; i < seperateLineLen; i++) {
 		std::cout << '-';
 	}
@@ -59,7 +59,7 @@ void Menu::printInstructions() const
 
 void Menu::changeColorStatus() {
 	char choice = 0;
-	if (this->color) {
+	if (renderer.isColor()) {
 		std::cout << "Colors are enable" << std::endl;
 	}
 	else
@@ -73,9 +73,9 @@ void Menu::changeColorStatus() {
 		if (_kbhit()) {
 			choice = tolower(_getch());
 			if (choice == 'y') {
-				this->color = !this->color;
+				renderer.changeColorMode();
 				clrscr();
-				if (this->color) {
+				if (renderer.isColor()) {
 					std::cout << "Colors are enable" << std::endl;
 				}
 				else
@@ -89,15 +89,36 @@ void Menu::changeColorStatus() {
 }
 
 void Menu::getUserChoice() {
+	hideCursor();
 	int choice = 0;
+	if (!this->screenReader.readScreenFileNames()) {
+		cout << "Error unsuccessful file reading";
+		return;
+	}
+	if(!this->screenReader.readScreen(this->bord, 0)){
+		 cout << "Error unsuccessful file reading";
+		 return;
+	}
 	printMenu();
 	while (choice != validChoic::Exit) {
 		if (_kbhit()) {
-			choice = _getch();
+			choice = tolower(_getch());
 			if (choice == validChoic::Play) {
 				clrscr();
-				Game newGame(this->color);
-				newGame.startGame();
+				Game newGame;
+				if (!newGame.startGame(this->bord, this->renderer)) {
+					cout << "Error unsuccessful file reading";
+					return;
+				}
+				clrscr();
+				printMenu();
+			}
+			else if (choice == validChoic::ChangeScreen) {
+				clrscr();
+				if (!chooseScreen()) {
+					cout << "Error unsuccessful file reading";
+					return;
+				}
 				clrscr();
 				printMenu();
 			}
@@ -117,4 +138,55 @@ void Menu::getUserChoice() {
 	}
 	clrscr();
 	std::cout << "Thanks for playing !" << std::endl << "GOODBYE:)";
+}
+
+bool Menu::chooseScreen() 
+{
+	char choice = 0;
+	int screenNum = 0;
+	int selectedScreen = 0;
+	bool isSelected = true;
+
+	if (this->screenReader.readScreen(this->bord, screenNum) == false) {
+		return false;
+	}
+	cout << this->bord;
+	this->renderer.printBord(this->bord.getBord());
+	cout << "Screen is selected" << endl;
+	cout << "Press N for next screen or B to return to menu";
+
+	while (choice != 'b') {
+		if (_kbhit()) {
+			choice = tolower(_getch());
+			if (choice == 'n') {
+				isSelected = false;
+				clrscr();
+				screenNum = (screenNum + 1) % 3;
+				if (this->screenReader.readScreen(this->bord, screenNum) == false) {
+					return false;
+				}
+				cout << this->bord;
+				this->renderer.printBord(this->bord.getBord());
+
+				if (screenNum == selectedScreen) {
+					isSelected = true;
+					cout << "Screen is selected" << endl;
+					cout << "Press N for next screen or B to return to menu";
+				}
+				else {
+					cout << "Press Y to select screen, Press N for next screen or B to return to menu " << endl;
+				}
+			}
+			else if (choice == 'y' && !isSelected) {
+				isSelected = true;
+				selectedScreen = screenNum;
+				cout << "Screen is selected" << endl;
+				cout << "Press N for next screen or B to return to menu";
+			}
+		}
+	}
+	if (this->screenReader.readScreen(this->bord, selectedScreen) == false) {
+		return false;
+	}
+	return true;
 }
