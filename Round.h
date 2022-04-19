@@ -16,7 +16,7 @@ enum class SwitchKeys { SwitchToSmall = 115, SwitchToBig = 98 };
 class Round
 {
 	char bord[hight][width];
-	Ship ships[2] = { Ship(ShipSize::Small, '@', 2) , Ship(ShipSize::Big, '#', 6) };
+	Ship ships[2] = { Ship(ShipSize::Small, '@', 3) , Ship(ShipSize::Big, '#', 6) };
 	vector<Block> blocks;
 	vector<Goast> goats;
 	int activeShip = 0;
@@ -26,7 +26,7 @@ class Round
 	bool shipFinished[2] = { false, false };
 	bool isLost = false;
 	
-	void readObjectsFromBord();
+	bool readObjectsFromBord();
 	void readBlock(vector<Point>& points, Point& temp, char objectCh);
 	bool isPointBelongToExsistingBlock(const Point& p);
 	bool isPointAlreadyAdded(vector<Point>& points, const Point& p);
@@ -38,8 +38,8 @@ class Round
 	bool isWallAhead(const vector<Point>& position) const;
 	bool isBlockAhead(const vector<Point>& position, Point& saver) const;
 	bool isGoastAhead(const vector<Point>& position, Point& saver) const;
-	Goast& findGoast(const Point& point);
-	Block& findBlock(const Point& point);
+	Goast* findGoast(const Point& point);
+	Block* findBlock(const Point& point);
 	bool isPointUnique(const Point& p, std::vector<Block*> fallingBlocks) const;
 	void moveFallingBlocks();
 	bool addFallingBlocks(Block& block, vector<Block*>& fallingBlocks, int* totalWeight);
@@ -53,28 +53,18 @@ class Round
 	bool isObjectOutOfBounderies(const Point& location);
 	void deleteBlock(const Block& block);
 	void deleteGoast(const Goast& goast);
-	
 	void playNextMove(Direction& dir);//Checks if next move is vallid and if yes plays it.
-	
-	
+	void curryBlocks(vector<Point>& position, Direction dir);
+	void getBlockToCurry(vector<Block*>& blocks, Block& first, int* totalWeight);
 	void moveShip(Direction dir);
-	
-	
-	
 	bool isExitPointAhead(const std::vector<Point>& position) const;
-	void moveBlocks(Block& block, Direction dir);
-	
-	
-	
-	
-	void changeActiveShip(char key);
+	void pushBlocks(Block& block, Direction dir);
+	bool changeActiveShip(char key);
 	bool isWin()const;
-	bool isShipDead();
 	
 public:
-	Round(Bord& bord, Renderer& renderer);
-	void init();
+	Round(Bord& bord, Renderer& renderer, int lives);
+	bool init();
 	int run();
-	
 };
 

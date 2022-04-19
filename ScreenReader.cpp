@@ -4,7 +4,7 @@ vector<string>& ScreenReader::getScreenFileNames()
 	return this->screenFileNames;
 }
 
-void ScreenReader::readScreenFileNames()
+bool ScreenReader::readScreenFileNames()
 {
 	string fileName;
 	for (auto& file : fs::directory_iterator(fs::current_path())) {
@@ -15,16 +15,17 @@ void ScreenReader::readScreenFileNames()
 	}
 
 	if (this->screenFileNames.empty()) {
-		//To do : Handle Error
+		return false;
 	}
 	sort(this->screenFileNames.begin(), this->screenFileNames.end());
+	return true;
 }
 
-void  ScreenReader::readScreen(Bord& bord, int screenNum) const
+bool  ScreenReader::readScreen(Bord& bord, int screenNum) const
 {
 	std::ifstream in(this->screenFileNames[screenNum]);
 	if (!in.good()) {
-		//Todo : handle error
+		return false;
 	}
 	string name;
 	getline(in, name);
@@ -41,10 +42,15 @@ void  ScreenReader::readScreen(Bord& bord, int screenNum) const
 	char** bordP = bord.getBord();
 	string line;
 	in.get();
-	for (int i = 0; i < hight; i++) {
+	int counter = 0;
+	while(!in.eof()) {
 		getline(in, line);
-		line.copy(bordP[i], width);//Check if there is a better way
+		if (line.size() != width || counter >= hight) {
+			return false;
+		}
+		line.copy(bordP[counter], width);
+		counter++;
 	}
-
 	in.close();
+	return true;
 }

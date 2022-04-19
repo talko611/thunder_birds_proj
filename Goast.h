@@ -15,7 +15,6 @@ public:
 	Direction getDirection() const;
 	void changeDirection();
 	void setLocation(int x, int y);
-	bool isEmpty() const;
 	void operator =(const Goast& goast);
 	bool operator ==(const Goast& goast);
 	friend ostream& operator <<(ostream& out, const Goast& goast);

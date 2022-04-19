@@ -21,6 +21,7 @@ enum class objectAsciiVal {
 constexpr static int hight = 25, width = 80;
 
 
+
 void clrscr();
 void hideCursor();
 void gotoxy(int x, int y);

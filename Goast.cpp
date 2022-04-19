@@ -52,8 +52,6 @@ void Goast::changeDirection() {
 
 void Goast::setLocation(int x, int y) { this->position.set(x, y); }
 
-bool Goast::isEmpty()const { return this->position.getX() < 0; }
-
 void Goast::operator=(const Goast& goast) { 
 	this->position = goast.position;
 	this->direction = goast.direction;

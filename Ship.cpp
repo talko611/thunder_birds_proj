@@ -17,7 +17,6 @@ Ship::Ship(ShipSize size, char shipCh, int weight) : size(size), shipCharacter(s
 
 void Ship::move(Direction dir) {
     int x, y;
-    copyCurrentLocationToOldLocation();
 
     switch (dir) {
     case Direction::Down:
@@ -53,13 +52,6 @@ void Ship::move(Direction dir) {
     }
 }
 
-void Ship::copyCurrentLocationToOldLocation() {
-    if (!oldLocation.empty()) {
-        oldLocation.clear();
-    }
-    oldLocation.insert(oldLocation.begin(), currentLocation.begin(), currentLocation.end());
-}
-
 std::ostream& operator<<(std::ostream& out, const Ship& ship) {
     std::cout << "Represented character: " << ship.shipCharacter << std::endl
         << "Location : ";
@@ -77,9 +69,7 @@ std::ostream& operator<<(std::ostream& out, const Ship& ship) {
     return out;
 }
 
-vector<Point> Ship::getCurrLoc() const {return currentLocation;}
-
-vector<Point> Ship::getOldLoc() const {return oldLocation;}
+const vector<Point>& Ship::getCurrLoc() const {return currentLocation;}
 
 char Ship::getShipCharacter() const {return shipCharacter;}
 
@@ -92,3 +82,7 @@ void Ship::setSize(ShipSize size) { this->size = size; }
 void Ship::setWeightCanMove(int weight) { this->weightCanMove = weight;}
 
 void Ship::setShipCharacter(char ch) { this->shipCharacter = ch; }
+
+void Ship::setPointOfLocation(Point p) {
+    this->currentLocation.push_back(p);
+}

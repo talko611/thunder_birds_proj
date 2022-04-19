@@ -11,8 +11,8 @@ class Renderer
 {
 	
 	vector<Point> pointsToErase;
-	vector<Point> blockToPrint;
 	vector<Point> goastsToPrint;
+	vector<Point> shipToPrint;
 	bool color;
 	Point legendPosition;
 	enum class objectChars { Wall = 176, Block = 178 };
@@ -46,8 +46,9 @@ class Renderer
 	void printShipTurn(int activeShip) const;
 	void printCell(char cellChar) const;
 	void erase()const;
-	void renderShip(const Ship& ship) const;
-	void renderBlocks(const Block blocks[], int size) const;
+	void renderBlocks(const vector<Block>& blocks) const;
+	void renderGoasts() const;
+	void renderShip(int activeShip) const;
 	
 
 public:
@@ -55,12 +56,12 @@ public:
 	void gotoxy(int x, int y) const;
 	void addPointsToErase(const vector<Point>& points);
 	void addPointToErase(const Point& point);
-	void addPointsOfBlock(const vector<Point>& points);
 	void addPointsOfGoast(const Point& point);
+	void addPointsOfShip(const vector<Point>& points);
 	void printBord(char** bord) const;
-	void Renderer::printBord(char bord[][width]) const;
+	void printBord(char bord[][width]) const;
 	void printLegend(int lives, int time, int activeShip) const;
-	void renderNextMove(const Ship& ship, const Block blocks[], int size , int time, int activeShip, bool isFinish);
+	void renderNextMove(int time, int activeShip, const vector<Block>& blocks);
 	void printPauseMessage() const;
 	void printWinningMessage()const;
 	void printLosingMessage(int lives) const;
@@ -68,6 +69,7 @@ public:
 	void setLegendPosition(int x, int y);
 	void changeColorMode();
 	bool isColor() const;
+	
 	
 };
 

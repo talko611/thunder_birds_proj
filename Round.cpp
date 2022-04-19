@@ -1,35 +1,43 @@
 #include "Round.h"
 
-Round::Round(Bord& bord, Renderer& renderer) : renderer(renderer){
+Round::Round(Bord& bord, Renderer& renderer, int lives) : renderer(renderer) {
 	char** pBord = bord.getBord();
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
 			this->bord[i][j] = pBord[i][j];
 		}
 	}
-	this->lives = bord.getLives();
+	this->lives = lives;
 	this->time = bord.getTime();
 }
 
-void Round::readObjectsFromBord()
+bool Round::readObjectsFromBord()
 {
-	//To do: error handling - try to read more than on ship and more than one legend point
-	bool isSmallShipReaded = false;
-	bool isBigShipReaded = false;
-	
+	int smallShipPointCounter = 0, bigShipPointCounter = 0, exitPointCounter = 0;
+	bool exitPointReaded = false;
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
-			if (!isSmallShipReaded && this->bord[i][j] == (char)objectAsciiVal::SmallShip) {
-				ships[0].setLocation(vector<Point> { {i, j}, { i,j + 1 }});
-				isSmallShipReaded = true;
-			}
-				
-			else if (!isBigShipReaded && this->bord[i][j] == (char)objectAsciiVal::BigShip) {
-				ships[1].setLocation(vector <Point> { {i, j}, { i, j + 1 }, { i + 1, j }, { i + 1, j + 1 }});
-				isBigShipReaded = true;
+			if (this->bord[i][j] == (char)objectAsciiVal::SmallShip) {
+				if (smallShipPointCounter < (int)ShipSize::Small) {
+					this->ships[0].setPointOfLocation({ i,j });
+					smallShipPointCounter++;
+				}
+				else {
+					return false;
+				}
 			}
 
-			else if (bord[i][j] >= '1' && bord[i][j] <= '9') {
+			else if (this->bord[i][j] == (char)objectAsciiVal::BigShip) {
+				if (bigShipPointCounter < (int)ShipSize::Big) {
+					this->ships[1].setPointOfLocation({ i,j });
+					bigShipPointCounter++;
+				}
+				else {
+					return false;
+				}
+			}
+
+			else if (bord[i][j] >= (char)objectAsciiVal::BlockLowestVal && bord[i][j] <= (char)objectAsciiVal::BlockLowestVal) {
 				vector<Point> temp;
 				Point curr(i, j);
 				readBlock(temp, curr, bord[i][j]);
@@ -40,15 +48,24 @@ void Round::readObjectsFromBord()
 					temp.clear();
 				}
 			}
-			else if (bord[i][j] == '$') {
+			else if (bord[i][j] == (char)objectAsciiVal::Goast) {
 				this->goats.push_back(Goast(i, j));
 			}
-
+			else if (bord[i][j] == (char) objectAsciiVal::ExitPoint){
+				exitPointCounter++;
+				if (exitPointCounter > 1) {
+					exitPointReaded = true;
+				}
+			}
 			else if (bord[i][j] == '&') {
 				renderer.setLegendPosition(i, j);
 			}
 		}
 	}
+	if (exitPointReaded) {
+		return true;
+	}
+	return false;
 }
 
 void Round::readBlock(vector<Point>& points, Point& temp, char objectCh) {
@@ -96,10 +113,13 @@ bool Round::isPointAlreadyAdded(vector<Point>& points, const Point& p) {
 	return false;
 }
 
-void Round::init() {
-	readObjectsFromBord();
+bool Round::init() {
+	if (!readObjectsFromBord()) {
+		return false;
+	}
 	renderer.printBord(this->bord);
 	renderer.printLegend(lives, time, activeShip);
+	return true;
 }
 
 int Round::run() {
@@ -111,8 +131,7 @@ int Round::run() {
 		{
 			moveFallingBlocks();
 			moveGoasts();
-			if (!isShipDead() && !isLost) {
-
+			if (!isLost) {
 				if (_kbhit())
 				{
 					key = tolower(_getch());
@@ -120,25 +139,23 @@ int Round::run() {
 					{
 						if (isSwitcherKey(key))
 						{
-							changeActiveShip(key);
-							dir = Direction::Stop;
+							if (changeActiveShip(key)) {
+								dir = Direction::Stop;
+							}
 						}
 						else
 						{
 							dir = (Direction)key;
-
 						}
 					}
 				}
 				playNextMove(dir);
 			}
-			/*this->renderer.renderNextMove(ships[activeShip], blocks, numOfBlocks, --time, activeShip, isWin());*/
-			clrscr();
-			renderer.printBord(this->bord);
+			this->renderer.renderNextMove(--time, activeShip, this->blocks);
 			if (time == 0) {
 				isLost = true;
 			}
-			Sleep(100);
+			Sleep(300);
 		} while (key != (char)ValidKeys::ESC && !isLost && !isWin());
 
 		if (isWin()) {
@@ -180,7 +197,6 @@ vector<Point> Round::getObjectFloatingPoints(const vector<Point>& current, Direc
 				break;
 			}
 		}
-
 		if (found == false) {
 			result.push_back(point);
 		}
@@ -211,30 +227,30 @@ bool Round::addFallingBlocks(Block& block, vector<Block*>& fallingBlocks, int* t
 		deleteBlock(block);
 		return false;
 	}
-	if (isShipAhead(next, &shipIndex)) {
-		if (this->ships[shipIndex].getWeightCanMove() < *totalWeight) {
-			isLost = true;
-		}
-		return false;
-	}
 	if (isWallAhead(next)) {
 		return false;
 	}
 	if (isGoastAhead(next, pointSaver)) {
-		Goast& goastSaver = findGoast(pointSaver);
-		if (!goastSaver.isEmpty()) {
-			deleteGoast(goastSaver);
+		Goast* goastSaver = findGoast(pointSaver);
+		if (goastSaver) {
+			deleteGoast(*goastSaver);
 		}
 		return true;
 	}
 
 	if (isBlockAhead(next, pointSaver)) {
-		Block& nextBlock = findBlock(pointSaver);
-		if (!nextBlock.isEmpty() && addFallingBlocks(nextBlock, fallingBlocks,totalWeight)) {
+		Block* nextBlock = findBlock(pointSaver);
+		if (nextBlock && addFallingBlocks(*nextBlock, fallingBlocks,totalWeight)) {
 			if (isPointUnique(block.getCurrentLocation()[0], fallingBlocks)) {
 				fallingBlocks.push_back(&block);
 			}
 			return true;
+		}
+		return false;
+	}
+	if (isShipAhead(next, &shipIndex)) {
+		if (this->ships[shipIndex].getWeightCanMove() < *totalWeight) {
+			isLost = true;
 		}
 		return false;
 	}
@@ -306,13 +322,13 @@ bool Round::isGoastAhead(const vector<Point>& position, Point& saver) const {
 	return false;
 }
 
-Goast& Round::findGoast(const Point& point) {
+Goast* Round::findGoast(const Point& point) {
 	for (auto& goast : this->goats) {
 		if (point == goast.getLocation()) {
-			return goast;
+			return &goast;
 		}
 	}
-	return Goast();
+	return nullptr;
 }
 
 void Round::setPointsOfNextMove(Direction dir, vector<Point>& points) const {
@@ -426,10 +442,15 @@ void Round::playNextMove(Direction& dir) {
 	if (dir == Direction::Stop) {
 		return;
 	}
-
+	if (isObjectOutOfBounderies(this->ships[this->activeShip].getCurrLoc())) {
+		this->isLost = true;
+		return;
+	}
 	Point temp;
 	vector<Point> nextMove = getObjectFloatingPoints(this->ships[this->activeShip].getCurrLoc(), dir);
+	vector<Point> above = getObjectFloatingPoints(this->ships[this->activeShip].getCurrLoc(), Direction::Up);
 
+	
 	if (isGoastAhead(nextMove, temp)) {
 		this->isLost = true;
 		return;
@@ -437,65 +458,63 @@ void Round::playNextMove(Direction& dir) {
 	else if (isWallAhead(nextMove) || isOtherShipAhead(nextMove)) {
 		return;
 	}
-	else
-	{
-		if (isBlockAhead(nextMove, temp)) {
-			Block& saver = findBlock(temp);
-			int totalWeight = 0;
-			if (!saver.isEmpty() && canMoveBlocks(saver, dir, &totalWeight)) {
-				/*moveBlocks(saver, dir);
-				moveShip(dir);*/
-			}
-			else
-			{
-				dir = Direction::Stop;
-			}
+	else if (isBlockAhead(nextMove, temp)) {
+		Block* saver = findBlock(temp);
+		int totalWeight = 0;
+		if (saver && canMoveBlocks(*saver, dir, &totalWeight)) {
+			curryBlocks(above, dir);
+			pushBlocks(*saver, dir);
+			moveShip(dir);
 		}
-		else if (isExitPointAhead(nextMove)) {
+		else
+		{
+			dir = Direction::Stop;
+		}
+	}
+	else if (isExitPointAhead(nextMove)) {
 			this->shipFinished[activeShip] = true;
-			std::vector<Point>& saver = this->ships[activeShip].getCurrLoc();
+			std::vector<Point> saver = this->ships[activeShip].getCurrLoc();
 			for (auto& point : saver) {
 				this->bord[point.getX()][point.getY()] = ' ';
 			}
 			this->renderer.addPointsToErase(saver);
 			dir = Direction::Stop;
 			this->activeShip = !activeShip;
-		}
-		else
-		{
-			moveShip(dir);
-		}
+	}
+	else
+	{
+		curryBlocks(above, dir);
+		moveShip(dir);
 	}
 }
-
-
-
-
 
 void Round::moveShip(Direction dir) {
-	ships[activeShip].move(dir);
-
-	for (auto& point : ships[activeShip].getOldLoc()) {
+	
+	vector<Point> temp = ships[activeShip].getCurrLoc();
+	for (auto& point : temp) {
 		bord[point.getX()][point.getY()] = ' ';
 	}
+	this->renderer.addPointsToErase(temp);
+	ships[activeShip].move(dir);
+	temp = ships[activeShip].getCurrLoc();
+
 	char shipCharacter = ships[activeShip].getShipCharacter();
-	for (auto& point : ships[activeShip].getCurrLoc()) {
+	for (auto& point : temp) {
 		bord[point.getX()][point.getY()] = shipCharacter;
 	}
-	this->renderer.addPointsToErase(ships[activeShip].getOldLoc());
+	this->renderer.addPointsOfShip(temp);
 }
 
-
-Block& Round::findBlock(const Point& pointOfBlock)
+Block* Round::findBlock(const Point& pointOfBlock)
 {
 	for (auto& block : this->blocks) {
 		for (auto& point : block.getCurrentLocation()) {
 			if (point == pointOfBlock) {
-				return block;
+				return &block;
 			}
 		}
 	}
-	return Block();
+	return nullptr;
 }
 
 bool Round::canMoveBlocks(const Block& block, Direction dir, int* totalWeight){
@@ -508,12 +527,11 @@ bool Round::canMoveBlocks(const Block& block, Direction dir, int* totalWeight){
 		return false;
 	}
 	if (isBlockAhead(nextMove, saver)) {
-		Block& nextBlock = findBlock(saver);
-		return canMoveBlocks(nextBlock, dir, totalWeight);
+		Block* nextBlock = findBlock(saver);
+		return canMoveBlocks(*nextBlock, dir, totalWeight);
 	}
 	return (ships[activeShip].getWeightCanMove() >= *totalWeight);
 }
-
 
 bool Round::isExitPointAhead(const std::vector<Point>& position) const
 {
@@ -527,15 +545,14 @@ bool Round::isExitPointAhead(const std::vector<Point>& position) const
 	return result;
 }
 
-void Round::moveBlocks(Block& block, Direction dir) 
+void Round::pushBlocks(Block& block, Direction dir) 
 {
-	std::vector <Point> next = block.getCurrentLocation();
-	setPointsOfNextMove(dir, next);
+	std::vector <Point> next = getObjectFloatingPoints(block.getCurrentLocation(),dir);
 	Point saver;
 
 	if (isBlockAhead(next, saver)) {
-		Block& nextBlock = findBlock(saver);
-		moveBlocks(nextBlock, dir);
+		Block* nextBlock = findBlock(saver);
+		pushBlocks(*nextBlock, dir);
 	}
 	moveBlock(block, dir);
 }
@@ -553,7 +570,6 @@ void Round::moveBlock(Block& block, Direction dir) {
 	for (auto& point : temp) {
 		this->bord[point.getX()][point.getY()] = blockCh;
 	}
-	this->renderer.addPointsOfBlock(temp);
 }
 
 bool Round::isPointUnique(const Point& p, std::vector<Block*> fallingBlocks) const {
@@ -569,51 +585,23 @@ bool Round::isPointUnique(const Point& p, std::vector<Block*> fallingBlocks) con
 	return answer;
 }
 
-void Round::changeActiveShip(char key){
+bool Round::changeActiveShip(char key){
+	bool res = false;
 	if (key == (char)ValidKeys::SwitchToBig) {
-		if (!shipFinished[1]) {
+		if (!shipFinished[1] && this->activeShip == 0) {
 			activeShip = 1;
+			res = true;
 		}
 	}
-	else if (!shipFinished[0]) {
+	else if (!shipFinished[0] && this->activeShip == 1) {
 		activeShip = 0;
+		res = true;
 	}
+	return res;
 }
 
 bool Round::isWin() const{
 	return shipFinished[1] && shipFinished[0];
-}
-
-bool Round::isShipDead() 
-{
-	bool result = false;
-	std::vector<Block> blocksOnShip;
-	for (const auto& ship : ships) {
-		for (const auto& block : blocks) {
-			std::vector<Point> below = block.getCurrentLocation();
-			setPointsOfNextMove(Direction::Down, below);
-			bool answer = false;
-			char shipCharacter = ship.getShipCharacter();
-			for (const auto& point : below) {
-				if (bord[point.getX()][point.getY()] == shipCharacter) {
-					answer = true;
-				}
-			}
-			if (answer) {
-				blocksOnShip.push_back(block);
-			}
-		}
-		int totalWeight = 0;
-		for (const auto& block : blocksOnShip) {
-			totalWeight += block.getWeight();
-		}
-		if (totalWeight > ship.getWeightCanMove()) {
-			this->isLost = true;
-			result = true;
-			break;
-		}
-	}
-	return result;
 }
 
 void Round::printObjectDetails() {
@@ -658,7 +646,7 @@ void Round::deleteBlock(const Block& block) {
 	for (const auto& point : block.getCurrentLocation()) {
 		bord[point.getX()][point.getY()] = ' ';
 	}
-	remove(this->blocks.begin(), this->blocks.end(), block);
+	this->blocks.erase(remove(this->blocks.begin(), this->blocks.end(), block), this->blocks.end());
 }
 
 void Round::deleteGoast(const Goast& goast) {
@@ -666,6 +654,40 @@ void Round::deleteGoast(const Goast& goast) {
 	this->renderer.addPointToErase(temp);
 	this->bord[temp.getX()][temp.getY()] = ' ';
 	renderer.addPointToErase(temp);
-	remove(this->goats.begin(), this->goats.end(), goast);
+	this->goats.erase(remove(this->goats.begin(), this->goats.end(), goast), this->goats.end());
+}
+
+void Round::curryBlocks(vector<Point>& position, Direction dir) {
+	if (dir == Direction::Down || dir == Direction::Up) {
+		return;
+	}
+	Point temp;
+	if (isBlockAhead(position, temp)) {
+		vector<Block*> blocksToCurry;
+		Block* tempBlock = findBlock(temp);
+		if (tempBlock) {
+			int totalWeight = 0;
+			getBlockToCurry(blocksToCurry, *tempBlock, &totalWeight);
+
+			for (auto& block : blocksToCurry) {
+				totalWeight = 0;
+				if (canMoveBlocks(*block, dir, &totalWeight)) {
+					pushBlocks(*block, dir);
+				}
+			}
+		}
+	}
+}
+
+void Round::getBlockToCurry(vector<Block*>& blocks, Block& first, int* totalWeight) {
+	Point temp;
+	vector <Point> tempLocation = getObjectFloatingPoints(first.getCurrentLocation(), Direction::Up);
+	blocks.push_back(&first);
+	*totalWeight += first.getWeight();
+
+	if (isBlockAhead(tempLocation, temp)) {
+		Block* tempBlock = findBlock(temp);
+		getBlockToCurry(blocks, *tempBlock, totalWeight);
+	}
 }
 

@@ -91,21 +91,34 @@ void Menu::changeColorStatus() {
 void Menu::getUserChoice() {
 	hideCursor();
 	int choice = 0;
+	if (!this->screenReader.readScreenFileNames()) {
+		cout << "Error unsuccessful file reading";
+		return;
+	}
+	if(!this->screenReader.readScreen(this->bord, 0)){
+		 cout << "Error unsuccessful file reading";
+		 return;
+	}
 	printMenu();
-	this->screenReader.readScreen(this->bord, 0);
 	while (choice != validChoic::Exit) {
 		if (_kbhit()) {
 			choice = tolower(_getch());
 			if (choice == validChoic::Play) {
 				clrscr();
 				Game newGame;
-				newGame.startGame(this->bord, this->renderer);
+				if (!newGame.startGame(this->bord, this->renderer)) {
+					cout << "Error unsuccessful file reading";
+					return;
+				}
 				clrscr();
 				printMenu();
 			}
 			else if (choice == validChoic::ChangeScreen) {
 				clrscr();
-				chooseScreen();
+				if (!chooseScreen()) {
+					cout << "Error unsuccessful file reading";
+					return;
+				}
 				clrscr();
 				printMenu();
 			}
@@ -127,14 +140,16 @@ void Menu::getUserChoice() {
 	std::cout << "Thanks for playing !" << std::endl << "GOODBYE:)";
 }
 
-void Menu::chooseScreen() 
+bool Menu::chooseScreen() 
 {
 	char choice = 0;
 	int screenNum = 0;
 	int selectedScreen = 0;
 	bool isSelected = true;
 
-	this->screenReader.readScreen(this->bord, screenNum);
+	if (this->screenReader.readScreen(this->bord, screenNum) == false) {
+		return false;
+	}
 	cout << this->bord;
 	this->renderer.printBord(this->bord.getBord());
 	cout << "Screen is selected" << endl;
@@ -147,7 +162,9 @@ void Menu::chooseScreen()
 				isSelected = false;
 				clrscr();
 				screenNum = (screenNum + 1) % 3;
-				this->screenReader.readScreen(this->bord, screenNum);
+				if (this->screenReader.readScreen(this->bord, screenNum) == false) {
+					return false;
+				}
 				cout << this->bord;
 				this->renderer.printBord(this->bord.getBord());
 
@@ -168,5 +185,8 @@ void Menu::chooseScreen()
 			}
 		}
 	}
-	this->screenReader.readScreen(this->bord, selectedScreen);
+	if (this->screenReader.readScreen(this->bord, selectedScreen) == false) {
+		return false;
+	}
+	return true;
 }

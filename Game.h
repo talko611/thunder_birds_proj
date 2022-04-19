@@ -7,7 +7,7 @@
 class Game {
   
 public:
-    void startGame(Bord& bord , Renderer& renderer);
+    bool startGame(Bord& bord , Renderer& renderer);
 };
 
 

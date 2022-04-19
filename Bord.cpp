@@ -22,39 +22,24 @@ Bord::~Bord()
 	delete bord;
 }
 
-char** Bord::getBord()
-{
-	return bord;
-}
+char** Bord::getBord(){return bord;}
 
-int Bord::getLives() const
-{
-	return this->lives;
-}
+int Bord::getLives() const{return this->lives;}
 
-int Bord::getTime() const
-{
-	return this->time;
-}
+int Bord::getTime() const{return this->time;}
 
+string Bord::getName() const{return this->name;}
 
-string Bord::getName() const
-{
-	return this->name;
-}
+void Bord::setName(string name){this->name = name;}
 
-void Bord::setName(string name)
-{
-	this->name = name;
-}
+void Bord::setLives(int lives){this->lives = lives;}
 
-void Bord::setLives(int lives)
-{
-	this->lives = lives;
-}
+void Bord::setTime(int time){this->time = time;}
 
-void Bord::setTime(int time)
-{
-	this->time = time;
+ostream& operator<<(ostream& out, const Bord& bord) {
+	cout << "Screen Name: " << bord.name << endl;
+	cout << "Lives: " << bord.lives << endl;
+	cout << "Time: " << bord.time << endl;
+	return out;
 }
 

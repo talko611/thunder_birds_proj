@@ -1,13 +1,14 @@
 
 #include "Game.h"
 
-void Game::startGame(Bord& bord, Renderer& renderer){
+bool Game::startGame(Bord& bord, Renderer& renderer){
     int lives = bord.getLives();
     while (lives) {
-        Round round(bord, renderer);
-        round.init();
+        Round round(bord, renderer, lives);
+        if (!round.init()) {
+            return false;
+        }
         int res = round.run();
-        lives--;
         if (res == 0) {
             break;
         }
@@ -16,6 +17,8 @@ void Game::startGame(Bord& bord, Renderer& renderer){
         if (res == 1) {
             break;
         }
+        --lives;
         clrscr();
     }
+    return true;
 }

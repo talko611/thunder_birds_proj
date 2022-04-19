@@ -21,11 +21,6 @@ public:
 	void setLives(int lives);
 	void setTime(int time);
 
-	friend ostream& operator<<(ostream& out, const Bord& bord) {
-		cout << "Screen Name: " << bord.name << endl;
-		cout << "Lives: " <<bord.lives << endl;
-		cout << "Time: " << bord.time << endl;
-		return out;
-	}
+	friend ostream& operator<<(ostream& out, const Bord& bord);
 };
 
