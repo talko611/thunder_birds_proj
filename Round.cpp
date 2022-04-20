@@ -37,7 +37,7 @@ bool Round::readObjectsFromBord()
 				}
 			}
 
-			else if (bord[i][j] >= (char)objectAsciiVal::BlockLowestVal && bord[i][j] <= (char)objectAsciiVal::BlockLowestVal) {
+			else if (bord[i][j] >= (char)objectAsciiVal::BlockLowestVal && bord[i][j] <= (char)objectAsciiVal::BlockHighestVal) {
 				vector<Point> temp;
 				Point curr(i, j);
 				readBlock(temp, curr, bord[i][j]);
@@ -249,7 +249,12 @@ bool Round::addFallingBlocks(Block& block, vector<Block*>& fallingBlocks, int* t
 		return false;
 	}
 	if (isShipAhead(next, &shipIndex)) {
-		if (this->ships[shipIndex].getWeightCanMove() < *totalWeight) {
+		if (shipIndex == 2) {
+			if (this->ships[1].getWeightCanMove() < *totalWeight) {
+				isLost = true;
+			}
+		}
+		else if (this->ships[shipIndex].getWeightCanMove() < *totalWeight) {
 			isLost = true;
 		}
 		return false;
@@ -263,19 +268,28 @@ bool Round::addFallingBlocks(Block& block, vector<Block*>& fallingBlocks, int* t
 bool Round::isShipAhead(const vector<Point>& position, int* index) const {
 	bool answer = false;
 	int x, y;
+	bool bigShip = false, smallShip = false;
 	for (auto& point : position) {
 		x = point.getX();
 		y = point.getY();
 		if (bord[x][y] == (char)objectAsciiVal::BigShip) {
-			*index = 1;
-			answer = true;
-			break;
+			bigShip = true;
 		}
 		else if (bord[x][y] == (char)objectAsciiVal::SmallShip) {
-			*index = 0;
-			answer = true;
-			break;
+			smallShip = true;
 		}
+	}
+	if (bigShip && smallShip) {
+		answer = true;
+		*index = 2;
+	}
+	else if (bigShip) {
+		answer = true;
+		*index = 1;
+	}
+	else if (smallShip) {
+		answer = true;
+		*index = 0;
 	}
 	return answer;
 }
