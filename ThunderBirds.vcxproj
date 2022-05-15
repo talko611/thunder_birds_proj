@@ -22,7 +22,8 @@
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Bord.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Goast.cpp" />
+    <ClCompile Include="Ghost.cpp" />
+    <ClCompile Include="HorizontalGhost.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Round.cpp" />
@@ -30,12 +31,15 @@
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="VerticalGhost.cpp" />
+    <ClCompile Include="WanderingGhost.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="Bord.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="Goast.h" />
+    <ClInclude Include="Ghost.h" />
+    <ClInclude Include="HorizontalGhost.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Round.h" />
@@ -43,6 +47,8 @@
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Ship.h" />
+    <ClInclude Include="VerticalGhost.h" />
+    <ClInclude Include="WanderingGhost.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="tb01.screen" />

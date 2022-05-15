@@ -4,7 +4,10 @@
 #include "Block.h"
 #include "Renderer.h"
 #include "Bord.h"
-#include "Goast.h"
+#include "Ghost.h"
+#include "HorizontalGhost.h"
+#include "VerticalGhost.h"
+#include "WanderingGhost.h"
 #include <conio.h>
 #include <vector>
 
@@ -18,7 +21,7 @@ class Round
 	char bord[hight][width];
 	Ship ships[2] = { Ship(ShipSize::Small, '@', 3) , Ship(ShipSize::Big, '#', 6) };
 	vector<Block> blocks;
-	vector<Goast> goats;
+	vector<Ghost*> ghosts;
 	int activeShip = 0;
 	int time;
 	int lives;
@@ -33,12 +36,12 @@ class Round
 	void printObjectDetails();//Test func
 	vector<Point> getObjectFloatingPoints(const vector<Point>& current, Direction dir) const;// Return the only the new points that the object steps on in next move
 	void setPointsOfNextMove(Direction dir, vector<Point>& points) const;
-	void setPointByDirection(Direction dir, Point& p) const;
 	bool isShipAhead(const vector<Point>& position, int* index) const; //check if a ship is on the way and rerutrn which ship in index;
+	bool isShipAhead(const Point& p);
 	bool isWallAhead(const vector<Point>& position) const;
 	bool isBlockAhead(const vector<Point>& position, Point& saver) const;
-	bool isGoastAhead(const vector<Point>& position, Point& saver) const;
-	Goast* findGoast(const Point& point);
+	bool isGhostAhead(const vector<Point>& position, Point& saver) const;
+	Ghost* findGhost(const Point& point);
 	Block* findBlock(const Point& point);
 	bool isPointUnique(const Point& p, std::vector<Block*> fallingBlocks) const;
 	void moveFallingBlocks();
@@ -52,7 +55,7 @@ class Round
 	bool isObjectOutOfBounderies(const vector<Point>& location);
 	bool isObjectOutOfBounderies(const Point& location);
 	void deleteBlock(const Block& block);
-	void deleteGoast(const Goast& goast);
+	void deleteGhost(Ghost* goast);
 	void playNextMove(Direction& dir);//Checks if next move is vallid and if yes plays it.
 	void curryBlocks(vector<Point>& position, Direction dir);
 	void getBlockToCurry(vector<Block*>& blocks, Block& first, int* totalWeight);

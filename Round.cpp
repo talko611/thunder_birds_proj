@@ -13,7 +13,7 @@ Round::Round(Bord& bord, Renderer& renderer, int lives) : renderer(renderer) {
 
 bool Round::readObjectsFromBord()
 {
-	int smallShipPointCounter = 0, bigShipPointCounter = 0, exitPointCounter = 0;
+	int smallShipPointCounter = 0, bigShipPointCounter = 0 ,exitPointCounter = 0;
 	bool exitPointReaded = false;
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
@@ -48,8 +48,14 @@ bool Round::readObjectsFromBord()
 					temp.clear();
 				}
 			}
-			else if (bord[i][j] == (char)objectAsciiVal::Goast) {
-				this->goats.push_back(Goast(i, j));
+			else if (bord[i][j] == (char)objectAsciiVal::HorizontalGhost) {
+				this->ghosts.push_back(new HorizontalGhost(i, j));
+			}
+			else if (bord[i][j] == (char)objectAsciiVal::verticalGhost) {
+				this->ghosts.push_back(new VerticalGhost(i, j));
+			}
+			else if (bord[i][j] == (char)objectAsciiVal::WandringGhost) {
+				this->ghosts.push_back(new WanderingGhost(i, j));
 			}
 			else if (bord[i][j] == (char) objectAsciiVal::ExitPoint){
 				exitPointCounter++;
@@ -230,10 +236,10 @@ bool Round::addFallingBlocks(Block& block, vector<Block*>& fallingBlocks, int* t
 	if (isWallAhead(next)) {
 		return false;
 	}
-	if (isGoastAhead(next, pointSaver)) {
-		Goast* goastSaver = findGoast(pointSaver);
+	if (isGhostAhead(next, pointSaver)) {
+		Ghost* goastSaver = findGhost(pointSaver);
 		if (goastSaver) {
-			deleteGoast(*goastSaver);
+			deleteGhost(goastSaver);
 		}
 		return true;
 	}
@@ -294,6 +300,13 @@ bool Round::isShipAhead(const vector<Point>& position, int* index) const {
 	return answer;
 }
 
+bool Round::isShipAhead(const Point& p) {
+	int x = p.getX();
+	int y = p.getY();
+
+	return  (this->bord[x][y] == (char)objectAsciiVal::BigShip || this->bord[x][y] == (char)objectAsciiVal::SmallShip);
+}
+
 bool Round::isWallAhead(const vector<Point>& position) const {
 	bool answer = false;
 	for (auto& point : position) {
@@ -323,12 +336,14 @@ bool Round::isBlockAhead(const vector<Point>& position, Point& saver) const {
 	return result;
 }
 
-bool Round::isGoastAhead(const vector<Point>& position, Point& saver) const {
+bool Round::isGhostAhead(const vector<Point>& position, Point& saver) const {
 	int x, y;
 	for (const auto& point : position) {
 		x = point.getX();
 		y = point.getY();
-		if (bord[x][y] == (char)objectAsciiVal::Goast) {
+		if (bord[x][y] == (char)objectAsciiVal::HorizontalGhost 
+			|| bord[x][y] == (char)objectAsciiVal::verticalGhost
+			|| bord[x][y] == (char)objectAsciiVal::WandringGhost) {
 			saver.set(x, y);
 			return true;
 		}
@@ -336,10 +351,10 @@ bool Round::isGoastAhead(const vector<Point>& position, Point& saver) const {
 	return false;
 }
 
-Goast* Round::findGoast(const Point& point) {
-	for (auto& goast : this->goats) {
-		if (point == goast.getLocation()) {
-			return &goast;
+Ghost* Round::findGhost(const Point& point) {
+	for (auto& ghost : this->ghosts) {
+		if (point == ghost->getLocation()) {
+			return ghost;
 		}
 	}
 	return nullptr;
@@ -347,57 +362,29 @@ Goast* Round::findGoast(const Point& point) {
 
 void Round::setPointsOfNextMove(Direction dir, vector<Point>& points) const {
 	for (auto& point : points) {
-		setPointByDirection(dir, point);
-	}
-}
-
-void Round::setPointByDirection(Direction dir, Point& p) const {
-	switch (dir) {
-	case Direction::Up:
-		p.set(p.getX() - 1, p.getY());
-		break;
-	case Direction::Down:
-		p.set(p.getX() + 1, p.getY());
-		break;
-	case Direction::Left:
-		p.set(p.getX(), p.getY() - 1);
-		break;
-	case Direction::Right:
-		p.set(p.getX(), p.getY() + 1);
-		break;
-	case Direction::Stop:
-		break;
+		point = changePointByDirection(point, dir);
 	}
 }
 
 void Round::moveGoasts() {
-	Direction currDir;
-	Point currLoc ,next;
-	int x, y;
-	for (auto& goast : this->goats) {
-		currDir = goast.getDirection();
-		currLoc = goast.getLocation();
-		next = currLoc;
-		setPointByDirection(currDir, next);
-		x = next.getX();
-		y = next.getY();
-
-		if (bord[x][y] == (char)objectAsciiVal::Wall1 
-			|| bord[x][y] == (char)objectAsciiVal::Wall2 
-			|| (bord[x][y] >= (char)objectAsciiVal::BlockLowestVal && bord[x][y] <= (char) objectAsciiVal::BlockHighestVal)) {
-			goast.changeDirection();
-		}
-		else if (bord[x][y] == (char)objectAsciiVal::BigShip || bord[x][y] == (char)objectAsciiVal::SmallShip) {
-			this->isLost = true;
-			break;
-		}
-		else if (isObjectOutOfBounderies(next)) {
-			deleteGoast(goast);
-		}
-		else {
-			renderer.addPointToErase(goast.getLocation());
-			goast.move(currDir, this->bord);
-			this->renderer.addPointsOfGoast(next);
+	for (auto& ghost : this->ghosts) {
+		Point saver = ghost->getLocation();
+		bool res = ghost->move(this->bord);
+		
+		if (res) {
+			Point newGhostLoc = ghost->getLocation();
+			if (isShipAhead(newGhostLoc)) {
+				isLost = true;
+			}
+			else if (isObjectOutOfBounderies(newGhostLoc)) {
+				deleteGhost(ghost);
+			}
+			else {
+				this->bord[saver.getX()][saver.getY()] = ' ';
+				renderer.addPointToErase(saver);
+				this->bord[newGhostLoc.getX()][newGhostLoc.getY()] = ghost->getSign();
+				renderer.addGhostToRender(ghost);
+			}
 		}
 	}
 }
@@ -465,7 +452,7 @@ void Round::playNextMove(Direction& dir) {
 	vector<Point> above = getObjectFloatingPoints(this->ships[this->activeShip].getCurrLoc(), Direction::Up);
 
 	
-	if (isGoastAhead(nextMove, temp)) {
+	if (isGhostAhead(nextMove, temp)) {
 		this->isLost = true;
 		return;
 	}
@@ -536,7 +523,7 @@ bool Round::canMoveBlocks(const Block& block, Direction dir, int* totalWeight){
 	Point saver;
 	*totalWeight += block.getWeight(); // add block's weight;
 
-	if (isWallAhead(nextMove) || isOtherShipAhead(nextMove) || isGoastAhead(nextMove, saver))
+	if (isWallAhead(nextMove) || isOtherShipAhead(nextMove) || isGhostAhead(nextMove, saver))
 	{
 		return false;
 	}
@@ -628,9 +615,9 @@ void Round::printObjectDetails() {
 	for (auto& block : this->blocks) {
 		cout << block;
 	}
-	cout << endl;
-	for (auto& goast : goats) {
-		cout << goast;
+	cout << "Ghosts: "<< endl;
+	for (auto& goast : ghosts) {
+		cout << *goast;
 	}
 	cout << endl;
 }
@@ -663,12 +650,11 @@ void Round::deleteBlock(const Block& block) {
 	this->blocks.erase(remove(this->blocks.begin(), this->blocks.end(), block), this->blocks.end());
 }
 
-void Round::deleteGoast(const Goast& goast) {
-	Point temp = goast.getLocation();
-	this->renderer.addPointToErase(temp);
+void Round::deleteGhost(Ghost* goast) {
+	Point temp = goast->getLocation();
 	this->bord[temp.getX()][temp.getY()] = ' ';
 	renderer.addPointToErase(temp);
-	this->goats.erase(remove(this->goats.begin(), this->goats.end(), goast), this->goats.end());
+	this->ghosts.erase(remove(this->ghosts.begin(), this->ghosts.end(), goast), this->ghosts.end());
 }
 
 void Round::curryBlocks(vector<Point>& position, Direction dir) {
