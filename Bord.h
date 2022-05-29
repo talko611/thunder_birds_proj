@@ -4,14 +4,15 @@
 
 class Bord
 {
-	char** bord;
-	string name;
-	int lives;
-	int time;
+	char** bord = nullptr;
+	string name ="";
+	int lives = 0;
+	int time = 0;
 	
 public:
 	Bord();
-	Bord(const Bord& bord);
+	Bord(const Bord& bord) = delete;
+	void operator=(const Bord& bord) = delete;
 	~Bord();
 	char** getBord();
 	int getLives() const;

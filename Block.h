@@ -13,7 +13,7 @@ public:
 	Block() {};
 	Block(const vector<Point>& blockLocation);
 	int getWeight() const;
-	const vector<Point>& getCurrentLocation() const;
+	const vector<Point>& getCurrentLocation()const;
 	char getCharacter() const;
 	void setLocation(const vector<Point>& location);
 	void setCharacter(char ch);

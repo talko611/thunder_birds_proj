@@ -15,7 +15,7 @@ void Renderer::erase()const
 {
 	for (auto& point : pointsToErase) {
 		gotoxy(point.getY(), point.getX());
-		printCell(' ');
+		cout << ' ';
 	}
 }
 
@@ -30,7 +30,8 @@ void Renderer::printBord(char** bord) const
 			if (bord[i][j] == (char)objectAsciiVal::Wall1 || bord[i][j] == (char)objectAsciiVal::Wall2) {
 				printCell((char)objectChars::Wall);
 			}
-			else if (bord[i][j] >= '1' && bord[i][j] <= '9') {
+			else if (bord[i][j] >= (char)objectAsciiVal::BlockLowestVal 
+					&& bord[i][j] <= (char)objectAsciiVal::BlockHighestVal) {
 				printCell((char)objectChars::Block);
 			}
 			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint || bord[i][j] == (char)objectAsciiVal::LegendPoint) {
@@ -49,13 +50,16 @@ void Renderer::printBord(char bord[][width]) const
 {
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
-			if (bord[i][j] == (char)objectAsciiVal::Wall1 || bord[i][j] == (char)objectAsciiVal::Wall2) {
+			if (bord[i][j] == (char)objectAsciiVal::Wall1 
+				|| bord[i][j] == (char)objectAsciiVal::Wall2) {
 				printCell((char)objectChars::Wall);
 			}
-			else if (bord[i][j] >= (char) objectAsciiVal::BlockLowestVal && bord[i][j] <= (char) objectAsciiVal::BlockHighestVal) {
+			else if (bord[i][j] >= (char) objectAsciiVal::BlockLowestVal 
+					&& bord[i][j] <= (char) objectAsciiVal::BlockHighestVal) {
 				printCell((char)objectChars::Block);
 			}
-			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint || bord[i][j] == (char) objectAsciiVal::LegendPoint) {
+			else if (bord[i][j] == (char)objectAsciiVal::ExitPoint 
+					|| bord[i][j] == (char) objectAsciiVal::LegendPoint) {
 				printCell(' ');
 			}
 			else
@@ -172,7 +176,15 @@ void Renderer::printCell(char cellChar) const {
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), dark_blue);
 			cout << cellChar;
 			break;
-		case(char) objectAsciiVal::Goast:
+		case (char) objectAsciiVal::verticalGhost:
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), magenta);
+			cout << cellChar;
+			break;
+		case (char)objectAsciiVal::HorizontalGhost:
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), magenta);
+			cout << cellChar;
+			break;
+		case (char)objectAsciiVal::WandringGhost:
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), magenta);
 			cout << cellChar;
 			break;
@@ -199,14 +211,16 @@ void Renderer::addPointToErase(const Point& point) {
 	this->pointsToErase.push_back(point);
 }
 
-void Renderer::addPointsOfGoast(const Point& point) {
-	this->goastsToPrint.push_back(point);
+void Renderer::addGhostToRender(Ghost* g) {
+	this->goastsToPrint.push_back(g);
 }
 
 void Renderer::renderGoasts() const {
-	for (const auto& point : this->goastsToPrint) {
-		gotoxy(point.getY(), point.getX());
-		printCell((char)objectAsciiVal::Goast);
+	 Point p;
+	for (const auto& ghost : this->goastsToPrint) {
+		p = ghost->getLocation();
+		gotoxy(p.getY(), p.getX());
+		printCell(ghost->getSign());
 	}
 }
 

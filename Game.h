@@ -1,13 +1,31 @@
 #pragma once
 #include "Utils.h"
-#include "Round.h"
 #include "Bord.h"
+#include "Renderer.h"
+#include "Menu.h"
+#include "FileInputOutput.h"
+#include "RoundByFile.h"
+#include "RoundByUser.h"
 
+class Game
+{
+	GameMode mode;
+	MenuChoice userChoice;
+	Bord bord;
+	Renderer renderer;
+	Menu menu;
+	FileInputOutput fileManager;
 
-class Game {
-  
+	void run();
+	Round* createRoundByMode();
+	bool checkResultVsRecorded(int gameResult) ;
+	bool init();
+
 public:
-    bool startGame(Bord& bord , Renderer& renderer);
+	Game(GameMode mode = GameMode::regular, MenuChoice choice = MenuChoice::PlayNewGame, bool color = true) :
+		mode(mode), userChoice(choice), bord(Bord()), renderer(Renderer(color)), menu(Menu()), fileManager(FileInputOutput(mode)) {}
+	void start();
 };
+
 
 

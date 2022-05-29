@@ -5,13 +5,14 @@
 #include "Ship.h"
 #include "Block.h"
 #include "Utils.h"
+#include "Ghost.h"
 
 
 class Renderer
 {
 	
 	vector<Point> pointsToErase;
-	vector<Point> goastsToPrint;
+	vector<Ghost*> goastsToPrint;
 	vector<Point> shipToPrint;
 	bool color;
 	Point legendPosition;
@@ -52,11 +53,11 @@ class Renderer
 	
 
 public:
-	Renderer(bool _color): color(_color){}
+	Renderer(bool _color = true): color(_color){}
 	void gotoxy(int x, int y) const;
 	void addPointsToErase(const vector<Point>& points);
 	void addPointToErase(const Point& point);
-	void addPointsOfGoast(const Point& point);
+	void addGhostToRender(Ghost* g);
 	void addPointsOfShip(const vector<Point>& points);
 	void printBord(char** bord) const;
 	void printBord(char bord[][width]) const;
@@ -69,7 +70,5 @@ public:
 	void setLegendPosition(int x, int y);
 	void changeColorMode();
 	bool isColor() const;
-	
-	
 };
 

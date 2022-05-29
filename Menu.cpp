@@ -12,7 +12,7 @@ void Menu::printMenu() const{
 	std::cout << std::endl;
 	std::cout << "Please enter your choice" << std::endl;
 	std::cout << "1 - Start new game" << std::endl;
-	std::cout << "2 - Choose screen" << std::endl;
+	std::cout << "2 - Choose and play single bord" << std::endl;
 	std::cout << "7 - Enable/Disable colors" << std::endl;
 	std::cout << "8 - Present instructions and keys" << std::endl;
 	std::cout << "9 - Exit game" << std::endl;
@@ -20,6 +20,7 @@ void Menu::printMenu() const{
 
 void Menu::printInstructions() const
 {
+	clrscr();
 	for (int i = 0; i < seperateLineLen; i++) {
 		std::cout << '-';
 	}
@@ -57,8 +58,9 @@ void Menu::printInstructions() const
 	clrscr();
 }
 
-void Menu::changeColorStatus() {
+void Menu::changeColorStatus(Renderer& renderer) const{
 	char choice = 0;
+	clrscr();
 	if (renderer.isColor()) {
 		std::cout << "Colors are enable" << std::endl;
 	}
@@ -86,107 +88,102 @@ void Menu::changeColorStatus() {
 			}
 		}
 	}
+	clrscr();
 }
 
-void Menu::getUserChoice() {
-	hideCursor();
+MenuChoice Menu::getUserChoice(Bord& bord, FileInputOutput& inOut, Renderer& renderer) {
 	int choice = 0;
-	if (!this->screenReader.readScreenFileNames()) {
-		cout << "Error unsuccessful file reading";
-		return;
-	}
-	if(!this->screenReader.readScreen(this->bord, 0)){
-		 cout << "Error unsuccessful file reading";
-		 return;
-	}
-	printMenu();
-	while (choice != validChoic::Exit) {
-		if (_kbhit()) {
-			choice = tolower(_getch());
-			if (choice == validChoic::Play) {
-				clrscr();
-				Game newGame;
-				if (!newGame.startGame(this->bord, this->renderer)) {
-					cout << "Error unsuccessful file reading";
-					return;
+	try {
+		printMenu();
+		while (true) {
+			if (_kbhit()) {
+				choice = tolower(_getch());
+				switch (choice)
+				{
+				case (int)MenuChoice::PlayNewGame:
+					inOut.readScreen(bord, 0);
+					return MenuChoice::PlayNewGame;
+				case (int)MenuChoice::ChooseAndPlaySingle:
+					if (this->playSingleScreen(bord, inOut, renderer)) {
+						return MenuChoice::ChooseAndPlaySingle;
+					}
+					clrscr();
+					this->printMenu();
+					break;
+				case (int)MenuChoice::changeColor:
+					this->changeColorStatus(renderer);
+					clrscr();
+					this->printMenu();
+					break;
+				case (int)MenuChoice::showInstructions:
+					this->printInstructions();
+					clrscr();
+					this->printMenu();
+					break;
+				case (int)MenuChoice::Exit:
+					return MenuChoice::Exit;
+				default:
+					break;
 				}
-				clrscr();
-				printMenu();
-			}
-			else if (choice == validChoic::ChangeScreen) {
-				clrscr();
-				if (!chooseScreen()) {
-					cout << "Error unsuccessful file reading";
-					return;
-				}
-				clrscr();
-				printMenu();
-			}
-			else if (choice == validChoic::changeColor) {
-				clrscr();
-				changeColorStatus();
-				clrscr();
-				printMenu();
-			}
-			else if (choice == validChoic::showInstructions) {
-				clrscr();
-				printInstructions();
-				clrscr();
-				printMenu();
 			}
 		}
 	}
-	clrscr();
-	std::cout << "Thanks for playing !" << std::endl << "GOODBYE:)";
+	catch (ios_base::failure& e) {
+		clrscr();
+		cout << "Something went wrong , Cannot start game..." << endl;
+		Sleep(2000);
+		return MenuChoice::Exit;
+	}
 }
 
-bool Menu::chooseScreen() 
+bool Menu::playSingleScreen(Bord& bord, FileInputOutput& inOut, Renderer& renderer) 
 {
 	char choice = 0;
-	int screenNum = 0;
+	int screenNum = inOut.getCurrentFileNum();
 	int selectedScreen = 0;
 	bool isSelected = true;
-
-	if (this->screenReader.readScreen(this->bord, screenNum) == false) {
-		return false;
-	}
-	cout << this->bord;
-	this->renderer.printBord(this->bord.getBord());
+		
+	clrscr();
+	inOut.readScreen(bord, screenNum);
+	cout << bord;
+	renderer.printBord(bord.getBord());
 	cout << "Screen is selected" << endl;
-	cout << "Press N for next screen or B to return to menu";
+	cout << "Press P to start game with the current selected screen , N for next screen or B to return to menu";
 
-	while (choice != 'b') {
-		if (_kbhit()) {
-			choice = tolower(_getch());
-			if (choice == 'n') {
-				isSelected = false;
-				clrscr();
-				screenNum = (screenNum + 1) % 3;
-				if (this->screenReader.readScreen(this->bord, screenNum) == false) {
-					return false;
+		while (choice != 'b') {
+			if (_kbhit()) {
+				choice = tolower(_getch());
+				if (choice == 'n') {
+					isSelected = false;
+					clrscr();
+					screenNum = (screenNum + 1) % 3;
+					inOut.readScreen(bord, screenNum);
+					cout << bord;
+					renderer.printBord(bord.getBord());
+
+					if (screenNum == selectedScreen) {
+						isSelected = true;
+						cout << "Screen is selected" << endl;
+						cout << "Press P to Play ,Press N for next screen or B to return to menu";
+					}
+					else {
+						cout << "Press P to start game with the current selected screen \nPress Y to select screen, Press N for next screen or B to return to menu " << endl;
+					}
 				}
-				cout << this->bord;
-				this->renderer.printBord(this->bord.getBord());
-
-				if (screenNum == selectedScreen) {
+				else if (choice == 'y' && !isSelected) {
 					isSelected = true;
+					selectedScreen = screenNum;
+					inOut.setCurrentInputFileNum(screenNum);
 					cout << "Screen is selected" << endl;
-					cout << "Press N for next screen or B to return to menu";
+					cout << "Press P to start game ,press N for next screen or B to return to menu";
 				}
-				else {
-					cout << "Press Y to select screen, Press N for next screen or B to return to menu " << endl;
+				else if (choice == 'p') {
+					inOut.readScreen(bord, selectedScreen);
+					clrscr();
+					return true;
 				}
-			}
-			else if (choice == 'y' && !isSelected) {
-				isSelected = true;
-				selectedScreen = screenNum;
-				cout << "Screen is selected" << endl;
-				cout << "Press N for next screen or B to return to menu";
 			}
 		}
-	}
-	if (this->screenReader.readScreen(this->bord, selectedScreen) == false) {
 		return false;
-	}
-	return true;
 }
+

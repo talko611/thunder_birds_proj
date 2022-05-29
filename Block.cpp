@@ -6,7 +6,7 @@ Block::Block(const vector<Point>& blockLocation) : currentLocation(blockLocation
 
 int Block::getWeight() const { return weight; }
 
-const vector<Point>& Block::getCurrentLocation() const { return currentLocation; }
+const vector<Point>& Block::getCurrentLocation() const{ return currentLocation; }
 
 void Block::setLocation(const vector<Point>& location) { this->currentLocation = location;}
 

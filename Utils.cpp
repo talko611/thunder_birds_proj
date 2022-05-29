@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "Point.h"
 
 
 void clrscr()
@@ -12,7 +13,7 @@ void hideCursor()
 	CONSOLE_CURSOR_INFO CURSOR;
 	CURSOR.dwSize = 1;
 	CURSOR.bVisible = FALSE;
-	SetConsoleCursorInfo(myconsole, &CURSOR);//second argument need pointer
+	SetConsoleCursorInfo(myconsole, &CURSOR);
 }
 
 void gotoxy(int x, int y) 
@@ -24,4 +25,22 @@ void gotoxy(int x, int y)
 	dwCursorPosition.Y = y;
 	hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleCursorPosition(hConsoleOutput, dwCursorPosition);
+}
+
+Point changePointByDirection(const Point& p, Direction dir) {
+	int x = p.getX();
+	int y = p.getY();
+
+	switch (dir) {
+	case Direction::Down:
+		return Point(++x, y);
+	case Direction::Up:
+		return Point(--x, y);
+	case Direction::Left:
+		return Point(x, --y);
+	case Direction::Right:
+		return Point(x, ++y);
+	default:
+		return Point();
+	}
 }
