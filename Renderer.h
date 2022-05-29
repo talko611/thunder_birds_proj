@@ -53,7 +53,7 @@ class Renderer
 	
 
 public:
-	Renderer(bool _color): color(_color){}
+	Renderer(bool _color = true): color(_color){}
 	void gotoxy(int x, int y) const;
 	void addPointsToErase(const vector<Point>& points);
 	void addPointToErase(const Point& point);
@@ -70,7 +70,5 @@ public:
 	void setLegendPosition(int x, int y);
 	void changeColorMode();
 	bool isColor() const;
-	
-	
 };
 

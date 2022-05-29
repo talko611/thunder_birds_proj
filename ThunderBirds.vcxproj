@@ -21,13 +21,14 @@
   <ItemGroup>
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Bord.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="Ghost.cpp" />
+    <ClCompile Include="FileInputOutput.cpp" />
     <ClCompile Include="HorizontalGhost.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Round.cpp" />
-    <ClCompile Include="ScreenReader.cpp" />
+    <ClCompile Include="RoundByFile.cpp" />
+    <ClCompile Include="RoundByUser.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -37,13 +38,15 @@
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="Bord.h" />
-    <ClInclude Include="Game.h" />
+    <ClInclude Include="FileInputOutput.h" />
     <ClInclude Include="Ghost.h" />
     <ClInclude Include="HorizontalGhost.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Round.h" />
-    <ClInclude Include="ScreenReader.h" />
+    <ClInclude Include="RoundByFile.h" />
+    <ClInclude Include="RoundByUser.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Ship.h" />
@@ -51,9 +54,16 @@
     <ClInclude Include="WanderingGhost.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="last_recorded.deatails" />
+    <None Include="tb01.result" />
+    <None Include="tb01.steps" />
     <None Include="tb01.screen" />
+    <None Include="tb02.result" />
     <None Include="tb02.screen" />
+    <None Include="tb02.steps" />
+    <None Include="tb03.result" />
     <None Include="tb03.screen" />
+    <None Include="tb03.steps" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -65,11 +75,13 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>

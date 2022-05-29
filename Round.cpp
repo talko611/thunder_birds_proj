@@ -1,14 +1,24 @@
 #include "Round.h"
 
-Round::Round(Bord& bord, Renderer& renderer, int lives) : renderer(renderer) {
+Round::Round(Bord& bord, Renderer& renderer, FileInputOutput& recorder,GameMode mode, size_t sleepTime) : renderer(renderer), sleepTime(sleepTime) ,fileManeger(recorder), mode(mode)
+{
+	setRound(bord);
+}
+void Round::setRound(Bord& bord) {
 	char** pBord = bord.getBord();
 	for (int i = 0; i < hight; i++) {
 		for (int j = 0; j < width; j++) {
 			this->bord[i][j] = pBord[i][j];
 		}
 	}
-	this->lives = lives;
+	this->lives = bord.getLives();
 	this->time = bord.getTime();
+}
+
+Round::~Round() {
+	for (auto& ghost : this->ghosts) {
+		delete ghost;
+	}
 }
 
 bool Round::readObjectsFromBord()
@@ -68,7 +78,7 @@ bool Round::readObjectsFromBord()
 			}
 		}
 	}
-	if (exitPointReaded) {
+	if (exitPointReaded && smallShipPointCounter == 2 && bigShipPointCounter == 4) {
 		return true;
 	}
 	return false;
@@ -123,72 +133,99 @@ bool Round::init() {
 	if (!readObjectsFromBord()) {
 		return false;
 	}
-	renderer.printBord(this->bord);
-	renderer.printLegend(lives, time, activeShip);
+	if (!(mode == GameMode::loadSilence)) {
+		renderer.printBord(this->bord);
+		renderer.printLegend(lives, time, activeShip);
+	}
+	
 	return true;
 }
 
-int Round::run() {
-	char key = 0;
-	Direction dir = Direction::Stop;
-	while (true)
-	{
-		do
-		{
-			moveFallingBlocks();
-			moveGoasts();
-			if (!isLost) {
-				if (_kbhit())
-				{
-					key = tolower(_getch());
-					if (isValidkey(key))
-					{
-						if (isSwitcherKey(key))
-						{
-							if (changeActiveShip(key)) {
-								dir = Direction::Stop;
-							}
-						}
-						else
-						{
-							dir = (Direction)key;
-						}
-					}
-				}
-				playNextMove(dir);
-			}
-			this->renderer.renderNextMove(--time, activeShip, this->blocks);
-			if (time == 0) {
-				isLost = true;
-			}
-			Sleep(300);
-		} while (key != (char)ValidKeys::ESC && !isLost && !isWin());
+//int Round::run() {
+//	char key = 0;
+//	Direction dir = Direction::Stop;
+//	while (true)
+//	{
+//		do
+//		{
+//			moveFallingBlocks();
+//			moveGoasts();
+//			if (mode == GameMode::record) {
+//				this->fileManeger.writeCurrentKey(key);
+//			}
+//			if (!isLost) {
+//				if (_kbhit())
+//				{
+//					key = tolower(_getch());
+//					
+//					if (isValidkey(key))
+//					{
+//						if (isSwitcherKey(key))
+//						{
+//							if (changeActiveShip(key)) {
+//								dir = Direction::Stop;
+//							}
+//						}
+//						else
+//						{
+//							dir = (Direction)key;
+//						}
+//					}
+//				}
+//				playNextMove(dir, key);
+//			}
+//			this->renderer.renderNextMove(--time, activeShip, this->blocks);
+//			if (time == 0) {
+//				isLost = true;
+//			}
+//			Sleep(sleepTime);
+//		} while (key != (char)ValidKeys::ESC && !isLost && !isWin());
+//
+//		if (mode == GameMode::record) {
+//			this->fileManeger.writeTime(time);
+//		}
+//
+//		if (isWin()) {
+//			renderer.clearRow();
+//			resetObjects();
+//			return 1;
+//		}
+//		if (isLost) {
+//			renderer.printLosingMessage(lives);
+//			resetObjects();
+//			return -1;
+//		}
+//		key = 0;
+//		renderer.printPauseMessage();
+//
+//		while (key != (char)ValidKeys::ESC && key != (char)ValidKeys::EXIT) {
+//			key = _getch();
+//			if (key == (char)ValidKeys::ESC) {
+//				break;
+//			}
+//			else if (key == (char)ValidKeys::EXIT) {
+//				return 0;
+//			}
+//		}
+//		renderer.clearRow();
+//		renderer.printLegend(lives, time, activeShip);
+//		key = 0;
+//		dir = Direction::Stop;
+//	}
+//}
 
-		if (isWin()) {
-			renderer.printWinningMessage();
-			return 1;
-		}
-		if (isLost) {
-			renderer.printLosingMessage(lives);
-			return -1;
-		}
-		key = 0;
-		renderer.printPauseMessage();
-
-		while (key != (char)ValidKeys::ESC && key != (char)ValidKeys::EXIT) {
-			key = _getch();
-			if (key == (char)ValidKeys::ESC) {
-				break;
-			}
-			else if (key == (char)ValidKeys::EXIT) {
-				return 0;
-			}
-		}
-		renderer.clearRow();
-		renderer.printLegend(lives, time, activeShip);
-		key = 0;
-		dir = Direction::Stop;
-	}
+void Round::resetObjects() 
+{
+	this->ships[0].getCurrLoc().clear();
+	this->ships[1].getCurrLoc().clear();
+	this->blocks.clear();
+	for (auto& ghost : this->ghosts)
+		delete ghost;
+	this->ghosts.clear();
+	this->shipFinished[0] = false;
+	this->shipFinished[1] = false;
+	this->activeShip = 0;
+	isLost = false;
 }
 
 vector<Point> Round::getObjectFloatingPoints(const vector<Point>& current, Direction dir) const {
@@ -367,9 +404,26 @@ void Round::setPointsOfNextMove(Direction dir, vector<Point>& points) const {
 }
 
 void Round::moveGoasts() {
+	bool res = false;
 	for (auto& ghost : this->ghosts) {
 		Point saver = ghost->getLocation();
-		bool res = ghost->move(this->bord);
+		if (mode == GameMode::loadRun || mode == GameMode::loadSilence) {
+			if (ghost->getSign() == (char)objectAsciiVal::WandringGhost) {
+				
+				res = ghost->moveByDir(this->bord, this->fileManeger.readGhostNextDir());
+			}
+			else {
+				res = ghost->move(this->bord);
+			}
+		}
+		else {
+			res = ghost->move(this->bord);
+		}
+		
+		if (mode == GameMode::record) {
+			fileManeger.writeWandringGhostMove(*ghost);
+		}
+		
 		
 		if (res) {
 			Point newGhostLoc = ghost->getLocation();
@@ -439,7 +493,7 @@ bool Round::isSwitcherKey(const char key)const {
 		|| key == (char)SwitchKeys::SwitchToSmall;
 }
 
-void Round::playNextMove(Direction& dir) {
+void Round::playNextMove(Direction& dir, char& key) {
 	if (dir == Direction::Stop) {
 		return;
 	}
@@ -481,6 +535,7 @@ void Round::playNextMove(Direction& dir) {
 			this->renderer.addPointsToErase(saver);
 			dir = Direction::Stop;
 			this->activeShip = !activeShip;
+			key = 0;
 	}
 	else
 	{
@@ -538,7 +593,7 @@ bool Round::isExitPointAhead(const std::vector<Point>& position) const
 {
 	bool result = false;
 	for (auto& point : position) {
-		if (bord[point.getX()][point.getY()] == '!') 
+		if (bord[point.getX()][point.getY()] == (char)objectAsciiVal::ExitPoint) 
 		{
 			result = true;
 		}

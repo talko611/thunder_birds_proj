@@ -13,7 +13,7 @@ void hideCursor()
 	CONSOLE_CURSOR_INFO CURSOR;
 	CURSOR.dwSize = 1;
 	CURSOR.bVisible = FALSE;
-	SetConsoleCursorInfo(myconsole, &CURSOR);//second argument need pointer
+	SetConsoleCursorInfo(myconsole, &CURSOR);
 }
 
 void gotoxy(int x, int y) 
@@ -41,6 +41,6 @@ Point changePointByDirection(const Point& p, Direction dir) {
 	case Direction::Right:
 		return Point(x, ++y);
 	default:
-		return Point();//Todo- handle error
+		return Point();
 	}
 }

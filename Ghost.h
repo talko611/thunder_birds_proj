@@ -18,6 +18,7 @@ public:
 	void setDirection(Direction dir) { this->direction = dir; }
 	char getSign() const { return this->sign; }
 	virtual bool move(char bord[][width]) = 0;
+	virtual bool moveByDir(char bord[][width], Direction dir) = 0;
 	virtual void changeDirection() = 0;
 	friend ostream& operator<<(ostream& out, const Ghost& g) {
 		return out << "Location: " << g.location << endl;

@@ -14,7 +14,7 @@ public:
     Ship() {};
     Ship(ShipSize size, char shipCh, int weight);
     Ship(const Point& p, ShipSize size, char shipCh , int weight);
-    const vector<Point>& getCurrLoc() const;
+    vector<Point>& getCurrLoc();
     char getShipCharacter() const;
     void move(Direction dir);
     int getWeightCanMove()const;

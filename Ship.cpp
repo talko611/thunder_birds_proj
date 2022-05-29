@@ -69,7 +69,7 @@ std::ostream& operator<<(std::ostream& out, const Ship& ship) {
     return out;
 }
 
-const vector<Point>& Ship::getCurrLoc() const {return currentLocation;}
+vector<Point>& Ship::getCurrLoc()  {return currentLocation;}
 
 char Ship::getShipCharacter() const {return shipCharacter;}
 

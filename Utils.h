@@ -22,6 +22,9 @@ enum class objectAsciiVal {
 	SmallShip = 64,
 	BlockLowestVal = 49 ,
 	BlockHighestVal = 57};
+enum class GameMode {regular = 0, record = 1,  loadRun = 2, loadSilence = 3};
+enum class MenuChoice { Exit = 57, PlayNewGame = 49, ChooseAndPlaySingle = 50, changeColor = 55, showInstructions = 56, Failure = -1 };
+enum class ValidKeys { Up = 119, Down = 120, Right = 100, Left = 97, SwitchToSmall = 115, SwitchToBig = 98, ESC = 27, EXIT = 57, Null = -1 };
 constexpr static int hight = 25, width = 80;
 
 

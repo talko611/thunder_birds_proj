@@ -1,24 +1,18 @@
 #include "Bord.h"
 
-Bord::Bord()
-{
+Bord::Bord() {
 	this->bord = new char* [hight] {};
-	for (int i = 0; i < hight; i++)
-		bord[i] = new char[width] {};
-
-	this->lives = this->time = 0;
-}
-
-Bord::Bord(const Bord& bord) {
-	this->bord = bord.bord;
-	this->lives = bord.lives;
-	this->time = bord.time;
+	for (int i = 0; i < hight; ++i) {
+		this->bord[i] = new char[width] {};
+	}
 }
 
 Bord::~Bord()
 {
-	for (int i = 0; i < hight; i++)
+	for (int i = 0; i < hight; i++) {
 		delete[] bord[i];
+	}
+		
 	delete bord;
 }
 

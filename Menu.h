@@ -1,23 +1,19 @@
 #pragma once
-#include "Game.h"
 #include "Bord.h"
-#include "ScreenReader.h"
+#include "FileInputOutput.h"
 #include "Renderer.h"
+#include "Utils.h"
+#include <conio.h>
 
 class Menu
 {
 	constexpr static int seperateLineLen = 40;
-	Bord bord;
-	Renderer renderer;
-	ScreenReader screenReader;
-	enum validChoic { Exit = 57, Play = 49,ChangeScreen = 50, changeColor = 55, showInstructions = 56};
-
+	
 	void printMenu() const;
 	void printInstructions() const;
-	void changeColorStatus();
-	bool chooseScreen();
+	void changeColorStatus(Renderer& renderer) const;
+	bool playSingleScreen(Bord& bord, FileInputOutput& inOut, Renderer& renderer);
 public:
-	Menu() : renderer(Renderer(true)) {};
-	void getUserChoice();
-	
+	Menu(){}
+	MenuChoice getUserChoice(Bord& bord, FileInputOutput& inOut, Renderer& renderer);
 };

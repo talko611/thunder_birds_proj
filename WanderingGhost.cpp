@@ -3,9 +3,27 @@
 bool WanderingGhost::move(char bord[][width]) {
 	Point saver = this->getLocation();
 	this->changeDirection();
-	saver = changePointByDirection(saver, this->getDirection());
-	int x = saver.getX();
-	int y = saver.getY();
+	if (checkIfMoveAvailable(saver, bord)) {
+		this->setLocation(saver);
+		return true;
+	}
+	return false;
+}
+
+bool WanderingGhost::moveByDir(char bord[][width], Direction dir) {
+	Point saver = this->getLocation();
+	this->setDirection(dir);
+	if (checkIfMoveAvailable(saver, bord)) {
+		this->setLocation(saver);
+		return true;
+	}
+	return false;
+}
+
+bool WanderingGhost::checkIfMoveAvailable(Point& p, const char bord[][width])const {
+	p = changePointByDirection(p, this->getDirection());
+	int x = p.getX();
+	int y = p.getY();
 	bool res = false;
 
 	if (bord[x][y] == (char)objectAsciiVal::Wall1 || bord[x][y] == (char)objectAsciiVal::Wall2
@@ -14,12 +32,10 @@ bool WanderingGhost::move(char bord[][width]) {
 		|| bord[x][y] == (char)objectAsciiVal::WandringGhost) {
 	}
 	else {
-		this->setLocation(saver);
 		res = true;
 	}
 
 	return res;
-
 }
 
 void WanderingGhost::changeDirection() {

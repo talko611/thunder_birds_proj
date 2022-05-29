@@ -21,11 +21,11 @@ bool ScreenReader::readScreenFileNames()
 	return true;
 }
 
-bool  ScreenReader::readScreen(Bord& bord, int screenNum) const
+void  ScreenReader::readScreen(Bord& bord, int screenNum) const
 {
 	std::ifstream in(this->screenFileNames[screenNum]);
 	if (!in.good()) {
-		return false;
+		throw ios_base::failure("Couldn't open file ");
 	}
 	string name;
 	getline(in, name);
@@ -46,11 +46,10 @@ bool  ScreenReader::readScreen(Bord& bord, int screenNum) const
 	while(!in.eof()) {
 		getline(in, line);
 		if (line.size() != width || counter >= hight) {
-			return false;
+			throw ios_base::failure("Incorrect file format");
 		}
 		line.copy(bordP[counter], width);
 		counter++;
 	}
 	in.close();
-	return true;
 }
