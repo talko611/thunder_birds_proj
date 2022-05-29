@@ -13,6 +13,7 @@ Notes:
 #All objects which will fall to into a "hole"(means out of the valid screen) will die.
 
 ########################### Stage 3 #################################################
+
 steps file:
 
 -contains only direction for wandring ghosts(first row) and the active ship direction.
