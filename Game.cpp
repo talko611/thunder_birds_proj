@@ -35,7 +35,7 @@ bool Game::init() {
 			this->userChoice = this->fileManager.getLastGameMode();
 			this->fileManager.readScreen(bord, this->fileManager.getCurrentFileNum());
 		}
-		if (!fileManager.setFilesByMode(this->mode)) {
+		if (mode != GameMode::regular && !fileManager.setFilesByMode(this->mode)) {
 			this->userChoice = MenuChoice::Exit;
 		}
 		return true;
